@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "enabled": false,
+  "hoursPerDay": 0,
+  "daysPerWeek": 0,
+  "blocks": [
+    {
+      "id": "sla-main",
+      "variant": "compact",
+      "zone": "sidebar-top",
+      "title": "SLA",
+      "collapsed": false,
+      "showName": false,
+      "showStatus": false,
+      "showPauseIcon": true,
+      "showBreachTime": false,
+      "timeMode": "remaining",
+      "timeStyle": "largest",
+      "textSource": "portal",
+      "metricMode": "customer-visible",
+      "metricIds": [],
+      "riskPercent": 20,
+      "refreshSeconds": 60,
+      "hideWhenEmpty": true,
+      "customSelector": "",
+      "customPosition": "after"
+    }
+  ],
+  "selectors": {}
+}

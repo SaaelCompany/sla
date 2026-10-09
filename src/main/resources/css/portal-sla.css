@@ -1,0 +1,365 @@
+.psla-mount:empty {
+    display: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.psla-host {
+    margin: 8px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    color: #172B4D;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.psla-host-inline {
+    margin: 4px 0 0;
+}
+
+.psla-block {
+    color: #172B4D;
+}
+
+.psla-variant-compact {
+    max-width: 280px;
+}
+
+.psla-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin: 0;
+    padding: 2px 0 6px;
+    border: 0;
+    background: transparent;
+    color: #172B4D;
+    font: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.25;
+    cursor: pointer;
+    text-align: left;
+}
+
+.psla-head:hover {
+    color: #0052CC;
+}
+
+.psla-icon {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    color: #6B778C;
+}
+
+.psla-icon svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+    fill: currentColor;
+}
+
+.psla-icon-chevron {
+    transition: transform 0.15s ease;
+}
+
+.psla-block.is-collapsed .psla-icon-chevron {
+    transform: rotate(-90deg);
+}
+
+.psla-block.is-collapsed .psla-body {
+    display: none;
+}
+
+.psla-row,
+.psla-metric-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 24px;
+    padding: 2px 0;
+}
+
+.psla-row-main,
+.psla-metric-line-main {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+}
+
+.psla-name {
+    color: #42526E;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.psla-time {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: #172B4D;
+}
+
+.psla-state-paused .psla-time,
+.psla-time.psla-state-paused {
+    color: #42526E;
+}
+
+.psla-state-running .psla-time,
+.psla-time.psla-state-running {
+    color: #006644;
+}
+
+.psla-state-at_risk .psla-time,
+.psla-time.psla-state-at_risk {
+    color: #FF8B00;
+}
+
+.psla-state-breached .psla-time,
+.psla-time.psla-state-breached,
+.psla-state-missed .psla-time,
+.psla-time.psla-state-missed {
+    color: #DE350B;
+}
+
+.psla-state-met .psla-time,
+.psla-time.psla-state-met {
+    color: #006644;
+}
+
+.psla-state-inactive .psla-time,
+.psla-time.psla-state-inactive {
+    color: #6B778C;
+}
+
+.psla-state-breached .psla-icon,
+.psla-state-missed .psla-icon {
+    color: #DE350B;
+}
+
+.psla-state-met .psla-icon {
+    color: #006644;
+}
+
+.psla-sub {
+    margin: 0;
+    color: #6B778C;
+    font-size: 12px;
+}
+
+.psla-empty {
+    margin: 0;
+    color: #6B778C;
+    font-size: 13px;
+}
+
+.psla-lozenge,
+.psla-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    background: #EBECF0;
+    color: #42526E;
+}
+
+.psla-cat-new,
+.psla-badge.psla-state-running {
+    background: #DEEBFF;
+    color: #0747A6;
+}
+
+.psla-cat-indeterminate,
+.psla-badge.psla-state-paused,
+.psla-badge.psla-state-at_risk {
+    background: #FFF0B3;
+    color: #172B4D;
+}
+
+.psla-cat-done,
+.psla-badge.psla-state-met {
+    background: #E3FCEF;
+    color: #006644;
+}
+
+.psla-badge.psla-state-breached,
+.psla-badge.psla-state-missed {
+    background: #FFEBE6;
+    color: #BF2600;
+}
+
+.psla-badges,
+.psla-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.psla-progress {
+    margin: 8px 0;
+    max-width: 640px;
+}
+
+.psla-progress-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.psla-track {
+    height: 6px;
+    border-radius: 3px;
+    background: #EBECF0;
+    overflow: hidden;
+}
+
+.psla-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: #36B37E;
+}
+
+.psla-fill.psla-state-at_risk {
+    background: #FFAB00;
+}
+
+.psla-fill.psla-state-breached,
+.psla-fill.psla-state-missed {
+    background: #FF5630;
+}
+
+.psla-fill.psla-state-paused {
+    background: #4C9AFF;
+}
+
+.psla-countdown {
+    margin: 8px 0;
+}
+
+.psla-countdown-value {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+}
+
+.psla-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    max-width: 720px;
+}
+
+.psla-card {
+    padding: 12px 14px;
+    border: 1px solid #DFE1E6;
+    border-radius: 3px;
+    background: #FFFFFF;
+    box-shadow: 0 1px 1px rgba(9, 30, 66, 0.08);
+}
+
+.psla-card h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.psla-card dl {
+    margin: 0;
+}
+
+.psla-card dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 3px 0;
+    font-size: 13px;
+}
+
+.psla-card dt {
+    margin: 0;
+    color: #6B778C;
+}
+
+.psla-card dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.psla-timeline {
+    margin: 8px 0 12px;
+    max-width: 640px;
+}
+
+.psla-timeline h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+}
+
+.psla-timeline ol {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 14px;
+    border-left: 2px solid #DFE1E6;
+}
+
+.psla-timeline li {
+    position: relative;
+    margin: 0 0 10px;
+    padding-left: 12px;
+}
+
+.psla-timeline li::before {
+    content: "";
+    position: absolute;
+    left: -18px;
+    top: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4C9AFF;
+}
+
+.psla-timeline li.is-breached::before {
+    background: #FF5630;
+}
+
+.psla-timeline li.is-met::before {
+    background: #36B37E;
+}
+
+.psla-status-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.psla-variant-status-strip {
+    max-width: 720px;
+}
+
+.psla-dense .psla-variant-compact {
+    max-width: none;
+}
+
+.psla-dense .psla-head {
+    display: none;
+}
+
+.psla-dense .psla-row {
+    min-height: 18px;
+    font-size: 12px;
+}

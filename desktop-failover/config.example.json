@@ -1,0 +1,18 @@
+{
+  "networkDesktop": "",
+  "localDesktop": "%LOCALAPPDATA%\\OfflineDesktop",
+  "pollSeconds": 15,
+  "failureThreshold": 2,
+  "recoveryThreshold": 2,
+  "probeMode": "share",
+  "probeTimeoutMs": 3000,
+  "syncIntervalSeconds": 60,
+  "maxFileBytes": 52428800,
+  "restartExplorer": true,
+  "explorerRestartCooldownSeconds": 120,
+  "syncBackOnRecovery": false,
+  "internetProbes": [
+    "http://www.msftconnecttest.com/connecttest.txt",
+    "http://connectivitycheck.gstatic.com/generate_204"
+  ]
+}

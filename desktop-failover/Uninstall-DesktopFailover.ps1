@@ -69,6 +69,10 @@ if ($state.Mode -eq 'Offline' -and -not [string]::IsNullOrWhiteSpace($network)) 
     Write-Output 'Путь рабочего стола не менялся.'
 }
 
+$outboxPath = Join-Path $dataDir 'outbox.json'
+if ([System.IO.File]::Exists($outboxPath)) {
+    Write-Output "Неотправленные заявки лежат в $outboxPath"
+}
 Write-Output "Файлы программы оставлены в $dataDir"
 Write-Output "Локальная копия ярлыков остаётся в папке из localDesktop. Её можно удалить вручную, когда сеть снова работает."
 exit 0

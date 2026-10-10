@@ -79,7 +79,7 @@ function New-State {
     return $state
 }
 
-Assert-Equal 'version' (Get-DesktopFailoverVersion) '1.0.0'
+Assert-Equal 'version' (Get-DesktopFailoverVersion) '1.1.0'
 Assert-True 'unc path' (Test-IsUncPath '\\fileserver\shared\Desktop')
 Assert-True 'local path is not unc' (-not (Test-IsUncPath 'C:\Users\a\Desktop'))
 Assert-True 'blank path is not unc' (-not (Test-IsUncPath '   '))
@@ -382,7 +382,10 @@ foreach ($scriptName in @(
     'DesktopShell.ps1',
     'DesktopFailover.ps1',
     'Install-DesktopFailover.ps1',
-    'Uninstall-DesktopFailover.ps1'
+    'Uninstall-DesktopFailover.ps1',
+    'WidgetLogic.ps1',
+    'MonitorLoop.ps1',
+    'DesktopWidget.ps1'
 )) {
     $scriptPath = Join-Path $root $scriptName
     $tokens = $null

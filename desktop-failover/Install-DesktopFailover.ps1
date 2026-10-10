@@ -21,7 +21,7 @@ function Write-StartupLauncher {
     $escaped = $ScriptPath.Replace('"', '""')
     $content = @"
 Set shell = CreateObject("Wscript.Shell")
-shell.Run "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""$escaped""", 0, False
+shell.Run "powershell.exe -NoProfile -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File ""$escaped""", 0, False
 "@
     $encoding = New-Object System.Text.UnicodeEncoding $false, $true
     [System.IO.File]::WriteAllText($launcherPath, $content.Trim() + [Environment]::NewLine, $encoding)
@@ -30,7 +30,7 @@ shell.Run "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass
 
 function Register-FailoverLogonTask {
     param([Parameter(Mandatory)][string]$ScriptPath)
-    $argument = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$ScriptPath`""
+    $argument = "-NoProfile -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$ScriptPath`""
     $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $argument
     $account = $env:USERNAME
     if (-not [string]::IsNullOrWhiteSpace($env:USERDOMAIN)) {
@@ -51,7 +51,7 @@ function Register-FailoverLogonTask {
         -Trigger $trigger `
         -Principal $principal `
         -Settings $settings `
-        -Description 'Переключение сетевого рабочего стола на локальный, когда сетевая папка недоступна.' `
+        -Description 'Виджет сервис-деска и переключение сетевого рабочего стола на локальный.' `
         -Force | Out-Null
 }
 
@@ -81,7 +81,11 @@ $names = @(
     'Install.bat',
     'Uninstall.bat',
     'README.md',
-    'config.example.json'
+    'config.example.json',
+    'WidgetLogic.ps1',
+    'DesktopWidget.ps1',
+    'MonitorLoop.ps1',
+    'news.example.json'
 )
 if (-not (Test-SameDirectory $sourceDir $targetDir)) {
     foreach ($name in $names) {
@@ -133,7 +137,7 @@ try {
     Write-Output 'Программа всё равно запустится из автозагрузки.'
 }
 
-$argument = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$scriptPath`""
+$argument = "-NoProfile -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$scriptPath`""
 Start-Process -FilePath 'powershell.exe' -ArgumentList $argument -WindowStyle Hidden | Out-Null
 Write-Output "Программа запущена. Файлы: $targetDir"
 

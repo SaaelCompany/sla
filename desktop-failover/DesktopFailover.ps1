@@ -14,6 +14,9 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'FailoverLogic.ps1')
 . (Join-Path $PSScriptRoot 'NetworkProbe.ps1')
 . (Join-Path $PSScriptRoot 'DesktopShell.ps1')
+. (Join-Path $PSScriptRoot 'WidgetLogic.ps1')
+. (Join-Path $PSScriptRoot 'MonitorLoop.ps1')
+. (Join-Path $PSScriptRoot 'DesktopWidget.ps1')
 
 function Get-FailoverDataDirectory {
     if (-not [string]::IsNullOrWhiteSpace($env:LOCALAPPDATA)) {
@@ -53,53 +56,6 @@ function Resolve-MonitorLocations {
         StatePath = $StatePath
         LogPath = $LogPath
         DataDirectory = $data
-    }
-}
-
-function Write-FailoverLog {
-    param(
-        [string]$Message,
-        [string]$Path
-    )
-    if ([string]::IsNullOrWhiteSpace($Path) -or [string]::IsNullOrWhiteSpace($Message)) { return }
-    $directory = [System.IO.Path]::GetDirectoryName($Path)
-    if (-not [string]::IsNullOrWhiteSpace($directory)) {
-        [void][System.IO.Directory]::CreateDirectory($directory)
-    }
-    if ([System.IO.File]::Exists($Path) -and (Get-Item -LiteralPath $Path).Length -gt 1MB) {
-        $backup = "$Path.old"
-        if ([System.IO.File]::Exists($backup)) { [System.IO.File]::Delete($backup) }
-        [System.IO.File]::Move($Path, $backup)
-    }
-    $clean = ($Message -replace '[\r\n]+', ' ').Trim()
-    $line = '{0:yyyy-MM-dd HH:mm:ss} {1}' -f (Get-Date), $clean
-    $payload = $line + [Environment]::NewLine
-    if (-not [System.IO.File]::Exists($Path)) {
-        $withBom = New-Object System.Text.UTF8Encoding $true
-        [System.IO.File]::WriteAllText($Path, $payload, $withBom)
-        return
-    }
-    $withoutBom = New-Object System.Text.UTF8Encoding $false
-    [System.IO.File]::AppendAllText($Path, $payload, $withoutBom)
-}
-
-function Get-LiveProbe {
-    param($Config, $State)
-    $registry = Get-RegisteredDesktopPath
-    $networkGuess = Resolve-NetworkDesktop -Configured $Config.NetworkDesktop -Remembered $State.NetworkDesktop -RegistryValue $registry
-    $shareUp = $false
-    $internetUp = $true
-    if (-not [string]::IsNullOrWhiteSpace($networkGuess)) {
-        $expanded = [Environment]::ExpandEnvironmentVariables($networkGuess)
-        $shareUp = Test-ShareReachable -Path $expanded -TimeoutMs $Config.ProbeTimeoutMs
-    }
-    if ($Config.ProbeMode -ne 'share') {
-        $internetUp = Test-InternetAccess -Urls $Config.InternetProbes -TimeoutMs $Config.ProbeTimeoutMs
-    }
-    [pscustomobject]@{
-        Registry = $registry
-        ShareUp = [bool]$shareUp
-        InternetUp = [bool]$internetUp
     }
 }
 
@@ -155,81 +111,50 @@ function Show-FailoverPreview {
     exit 1
 }
 
-function Invoke-MonitorCycle {
-    param($Config, $State)
-    $probe = Get-LiveProbe -Config $Config -State $State
-    $result = Invoke-FailoverCycle -Config $Config -State $State -RegistryDesktop $probe.Registry -ShareUp $probe.ShareUp -InternetUp $probe.InternetUp
-    $probeStatus = Format-ProbeStatus -ProbeMode $Config.ProbeMode -ShareUp $probe.ShareUp -InternetUp $probe.InternetUp
-    $logs = New-Object System.Collections.Generic.List[string]
-
-    if (-not $result.Ok) {
-        $logs.Add([string]$result.Message)
-        return [pscustomobject]@{ Result = $result; Logs = $logs }
-    }
-
-    if ($result.State.ConsecutiveFailures -eq 1 -and -not $result.Switched) {
-        $logs.Add("Проверка не прошла ($probeStatus). Жду повтор перед переключением на локальный рабочий стол.")
-    }
-    if ($result.State.ConsecutiveSuccesses -eq 1 -and -not $result.Switched) {
-        $logs.Add("Проверка снова успешна ($probeStatus). Жду повтор перед возвратом сетевого рабочего стола.")
-    }
-
-    if ($result.ShouldSyncBack) {
-        $back = Sync-TreeOneWay -Source $result.LocalDesktop -Destination $result.NetworkDesktop -MaxFileBytes $Config.MaxFileBytes
-        if ($back.Copied -gt 0 -or $back.Errors.Count -gt 0) {
-            $logs.Add("Возврат локальных изменений: скопировано $($back.Copied), ошибок $($back.Errors.Count).")
-            foreach ($errorLine in @($back.Errors | Select-Object -First 5)) {
-                $logs.Add($errorLine)
-            }
+function Start-WidgetMonitor {
+    param($Locations, $Bridge)
+    $runspace = [runspacefactory]::CreateRunspace()
+    $runspace.ApartmentState = [System.Threading.ApartmentState]::MTA
+    $runspace.Open()
+    $worker = [powershell]::Create()
+    $worker.Runspace = $runspace
+    $root = $PSScriptRoot
+    [void]$worker.AddScript({
+        param($Root, $ConfigPath, $StatePath, $LogPath, $Bridge)
+        Set-Location ([System.IO.Path]::GetTempPath())
+        . (Join-Path $Root 'FailoverLogic.ps1')
+        . (Join-Path $Root 'NetworkProbe.ps1')
+        . (Join-Path $Root 'DesktopShell.ps1')
+        . (Join-Path $Root 'WidgetLogic.ps1')
+        . (Join-Path $Root 'MonitorLoop.ps1')
+        try {
+            Start-FailoverMonitorLoop -ConfigPath $ConfigPath -StatePath $StatePath -LogPath $LogPath -Bridge $Bridge
+        } catch {
+            $Bridge.StatusText = "Ошибка: $($_.Exception.Message)"
         }
+    }).AddArgument($root).AddArgument($Locations.ConfigPath).AddArgument($Locations.StatePath).AddArgument($Locations.LogPath).AddArgument($Bridge)
+    $handle = $worker.BeginInvoke()
+    [pscustomobject]@{
+        Worker = $worker
+        Runspace = $runspace
+        Handle = $handle
     }
+}
 
-    if ($result.ShouldSync) {
-        $previousSync = [string]$result.State.LastSyncUtc
-        $sync = Sync-TreeOneWay -Source $result.NetworkDesktop -Destination $result.LocalDesktop -MaxFileBytes $Config.MaxFileBytes
-        $result.State.LastSyncUtc = [datetime]::UtcNow.ToString('o')
-        $firstSync = [string]::IsNullOrWhiteSpace($previousSync)
-        if ($sync.Copied -gt 0 -or $sync.Errors.Count -gt 0 -or ($firstSync -and $sync.Skipped -gt 0)) {
-            $logs.Add("Синхронизация: скопировано $($sync.Copied), пропущено $($sync.Skipped), ошибок $($sync.Errors.Count).")
-            foreach ($errorLine in @($sync.Errors | Select-Object -First 5)) {
-                $logs.Add($errorLine)
-            }
-        }
-    }
-
-    if ($result.ShouldApply) {
-        if ($result.State.Mode -eq 'Offline' -and (Test-IsRemoteDrive $result.LocalDesktop)) {
-            $logs.Add("Локальный путь $($result.LocalDesktop) находится на сетевом диске. Укажите папку на диске этого компьютера.")
-        } else {
-            $applied = Set-DesktopLocation -Path $result.DesiredDesktop
-            $restart = $false
-            if ($Config.RestartExplorer -and (Test-IntervalElapsed -LastUtc $result.State.LastExplorerRestartUtc -IntervalSeconds $Config.ExplorerRestartCooldownSeconds)) {
-                $restart = $true
-            }
-            $explorer = Update-ExplorerDesktop -RestartExplorer $restart
-            if ($restart) {
-                $result.State.LastExplorerRestartUtc = [datetime]::UtcNow.ToString('o')
-            }
-            $cacheEmpty = $false
-            if ($result.State.Mode -eq 'Offline') {
-                $cacheEmpty = -not (Test-DirectoryHasEntries $result.LocalDesktop)
-            }
-            $logs.Add((Format-DesktopSwitchMessage -Switched $result.Switched -Mode $result.State.Mode -DesiredDesktop $result.DesiredDesktop -ProbeStatus $probeStatus -RestartedExplorer $explorer.Restarted -CacheEmpty $cacheEmpty))
-            if ($applied.KnownFolderHResult -ne 0) {
-                $code = '{0:X8}' -f [uint32]$applied.KnownFolderHResult
-                $logs.Add("Системный вызов смены папки вернул код 0x$code. Значение записано в реестр пользователя.")
-            }
-            if (-not [string]::IsNullOrWhiteSpace($applied.NativeError)) {
-                $logs.Add("Системный вызов смены папки недоступен: $($applied.NativeError). Значение записано в реестр пользователя.")
-            }
-            $registered = Get-RegisteredDesktopPath
-            if (-not (Compare-DesktopPath $registered $result.DesiredDesktop)) {
-                $logs.Add('Реестр по-прежнему содержит другой путь. Если его возвращает групповая политика, программа запишет путь снова на следующем цикле.')
-            }
-        }
-    }
-
-    return [pscustomobject]@{ Result = $result; Logs = $logs }
+function New-WidgetBridge {
+    [hashtable]::Synchronized(@{
+        Mode = 'Online'
+        StatusText = 'Проверяю сеть'
+        ItemsJson = '{"items":[]}'
+        FreshJson = '{"items":[]}'
+        FeedGeneration = 0
+        UnreadCount = 0
+        FromCache = $false
+        FeedMessage = ''
+        OutboxCount = 0
+        OutboxDirty = $false
+        ExitRequested = $false
+    })
 }
 
 if (-not (Test-IsWindowsPlatform)) {
@@ -241,15 +166,48 @@ try { Set-Location -LiteralPath ([System.IO.Path]::GetTempPath()) } catch {}
 
 $locations = Resolve-MonitorLocations -ConfigPath $ConfigPath -StatePath $StatePath -LogPath $LogPath
 
-if ($Status) {
-    Show-FailoverStatus -Locations $locations
+if ($Status) { Show-FailoverStatus -Locations $locations }
+if ($Preview) { Show-FailoverPreview -Locations $locations }
+
+$widgetEnabled = $true
+try {
+    $widgetEnabled = [bool](Import-WidgetConfig $locations.ConfigPath).Enabled
+} catch {
+    $widgetEnabled = $true
 }
-if ($Preview) {
-    Show-FailoverPreview -Locations $locations
+
+if (-not $Once -and $widgetEnabled) {
+    $apartment = [System.Threading.Thread]::CurrentThread.GetApartmentState()
+    if ($apartment -ne [System.Threading.ApartmentState]::STA) {
+        $relaunch = New-Object System.Collections.Generic.List[string]
+        [void]$relaunch.Add('-NoProfile')
+        [void]$relaunch.Add('-STA')
+        [void]$relaunch.Add('-WindowStyle')
+        [void]$relaunch.Add('Hidden')
+        [void]$relaunch.Add('-ExecutionPolicy')
+        [void]$relaunch.Add('Bypass')
+        [void]$relaunch.Add('-File')
+        [void]$relaunch.Add($PSCommandPath)
+        if (-not [string]::IsNullOrWhiteSpace($ConfigPath)) {
+            [void]$relaunch.Add('-ConfigPath')
+            [void]$relaunch.Add($ConfigPath)
+        }
+        if (-not [string]::IsNullOrWhiteSpace($StatePath)) {
+            [void]$relaunch.Add('-StatePath')
+            [void]$relaunch.Add($StatePath)
+        }
+        if (-not [string]::IsNullOrWhiteSpace($LogPath)) {
+            [void]$relaunch.Add('-LogPath')
+            [void]$relaunch.Add($LogPath)
+        }
+        Start-Process -FilePath (Get-CurrentHostExecutable) -ArgumentList $relaunch.ToArray() -WindowStyle Hidden | Out-Null
+        exit 0
+    }
 }
 
 $mutex = $null
 $owned = $false
+$monitor = $null
 try {
     $mutex = New-Object System.Threading.Mutex($false, 'Local\DesktopFailover.SingleInstance')
     try {
@@ -262,41 +220,20 @@ try {
         exit 0
     }
 
-    $state = Read-FailoverState $locations.StatePath
-    Write-FailoverLog "DesktopFailover $(Get-DesktopFailoverVersion) запущен. Конфиг: $($locations.ConfigPath)" $locations.LogPath
-    $script:LastRepeatLog = ''
-    $config = $null
-
-    while ($true) {
-        try {
-            $config = Import-FailoverConfig $locations.ConfigPath
-            $cycle = Invoke-MonitorCycle -Config $config -State $state
-            $state = $cycle.Result.State
-            Write-FailoverState -State $state -Path $locations.StatePath
-            foreach ($line in @($cycle.Logs)) {
-                if ([string]::IsNullOrWhiteSpace($line)) { continue }
-                if (-not $cycle.Result.Ok) {
-                    if ($line -eq $script:LastRepeatLog) { continue }
-                    $script:LastRepeatLog = $line
-                } else {
-                    $script:LastRepeatLog = ''
-                }
-                Write-FailoverLog $line $locations.LogPath
-            }
-            if ($cycle.Result.Ok) { $script:LastRepeatLog = '' }
-        } catch {
-            $message = "Ошибка цикла: $($_.Exception.Message)"
-            if ($message -ne $script:LastRepeatLog) {
-                Write-FailoverLog $message $locations.LogPath
-                $script:LastRepeatLog = $message
-            }
-        }
-        if ($Once) { break }
-        $seconds = 15
-        if ($null -ne $config) { $seconds = [int]$config.PollSeconds }
-        Start-Sleep -Seconds $seconds
+    if ($Once -or -not $widgetEnabled) {
+        Start-FailoverMonitorLoop -ConfigPath $locations.ConfigPath -StatePath $locations.StatePath -LogPath $locations.LogPath -Once:$Once
+    } else {
+        $bridge = New-WidgetBridge
+        $monitor = Start-WidgetMonitor -Locations $locations -Bridge $bridge
+        Start-DesktopWidgetHost -Bridge $bridge -ConfigPath $locations.ConfigPath -DataDirectory $locations.DataDirectory
     }
 } finally {
+    if ($null -ne $monitor) {
+        try { $monitor.Worker.Stop() } catch {}
+        try { $monitor.Runspace.Close() } catch {}
+        try { $monitor.Worker.Dispose() } catch {}
+        try { $monitor.Runspace.Dispose() } catch {}
+    }
     if ($owned -and $null -ne $mutex) {
         try { [void]$mutex.ReleaseMutex() } catch {}
         $mutex.Dispose()

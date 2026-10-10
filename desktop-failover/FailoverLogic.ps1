@@ -1,7 +1,7 @@
 ﻿#Requires -Version 5.0
 
 function Get-DesktopFailoverVersion {
-    return '1.0.0'
+    return '1.1.0'
 }
 
 function Test-IsWindowsPlatform {

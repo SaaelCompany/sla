@@ -2,7 +2,7 @@
 <atlassian-plugin key="com.portalsla.portal-sla" name="Portal SLA" plugins-version="2">
     <plugin-info>
         <description>SLA на портале клиента Jira Service Management: блок всегда внизу боковой панели, вид и метрики настраиваются в проекте.</description>
-        <version>1.0.8</version>
+        <version>1.0.9</version>
         <vendor name="Portal SLA"/>
         <param name="atlassian-data-center-status">compatible</param>
         <param name="atlassian-data-center-compatible">true</param>

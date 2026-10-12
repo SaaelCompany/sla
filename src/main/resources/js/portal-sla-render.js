@@ -960,12 +960,12 @@
             return "#DE350B";
         }
         if (state === "at_risk") {
-            return "#FF8B00";
+            return "#FFAB00";
         }
         if (state === "paused" || state === "inactive") {
             return "#6B778C";
         }
-        return "#00875A";
+        return "#36B37E";
     }
 
     function clockFace(metric, block, model, described) {
@@ -1016,7 +1016,7 @@
             transform: "rotate(" + angles.minute + " 60 60)"
         }));
         face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "5.5", fill: "#172B4D"}));
-        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "3", fill: "#FF8B00"}));
+        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "3", fill: "#0052CC"}));
         return face;
     }
 

@@ -77,8 +77,8 @@
                 paused: "На паузе",
                 running: "В срок",
                 risk: "Истекает",
-                breached: "Срок прошёл",
-                done: "Уложились"
+                breached: "Просрочено",
+                done: "Выполнено"
             },
             errors: {
                 "invalid-json": "Не удалось прочитать настройки.",
@@ -161,9 +161,9 @@
             presets: {
                 paused: "Paused",
                 running: "On time",
-                risk: "Due soon",
+                risk: "Expiring",
                 breached: "Overdue",
-                done: "Met"
+                done: "Done"
             },
             errors: {
                 "invalid-json": "The settings could not be read.",
@@ -304,14 +304,14 @@
         }
         if (preset === "breached") {
             return [
-                metric(first.id, first.name, {goal: 1, remaining: -0.4, elapsed: 1.4, breached: true, customerVisible: first.customerVisible}),
-                metric(second.id, second.name, {goal: 2, remaining: 1, elapsed: 1, customerVisible: second.customerVisible})
+                metric(first.id, first.name, {goal: 1, remaining: -0.4, elapsed: 1.4, breached: true, ongoing: false, customerVisible: first.customerVisible}),
+                metric(second.id, second.name, {goal: 2, remaining: -0.5, elapsed: 2.5, breached: true, ongoing: false, customerVisible: second.customerVisible})
             ];
         }
         if (preset === "done") {
             return [
                 metric(first.id, first.name, {goal: 1, remaining: 0.3, elapsed: 0.7, ongoing: false, customerVisible: first.customerVisible}),
-                metric(second.id, second.name, {goal: 1, remaining: -0.5, elapsed: 1.5, breached: true, ongoing: false, customerVisible: second.customerVisible})
+                metric(second.id, second.name, {goal: 5, remaining: 1, elapsed: 4, ongoing: false, customerVisible: second.customerVisible})
             ];
         }
         return [
@@ -339,6 +339,19 @@
         block.showStatus = false;
         block.customSelector = "";
         block.customPosition = "after";
+    }
+
+    function ensureSingleBlock() {
+        if (!state.layout) {
+            return;
+        }
+        if (!state.layout.blocks || !state.layout.blocks.length) {
+            state.layout.blocks = [newBlock("portal")];
+        }
+        if (state.layout.blocks.length > 1) {
+            state.layout.blocks = [state.layout.blocks[0]];
+        }
+        lockBlock(state.layout.blocks[0]);
     }
 
     function newBlock(variant) {
@@ -444,36 +457,9 @@
         return options;
     }
 
-    function renderBlock(block, index) {
+    function renderBlock(block) {
         var card = el("section", "psla-card");
         card.setAttribute("data-block-settings", block.id);
-        var head = el("div", "psla-card-head");
-        head.appendChild(el("h2", null, tr("block") + " " + (index + 1)));
-        var tools = el("div", "psla-card-tools");
-        var up = el("button", null, tr("up"));
-        up.type = "button";
-        up.disabled = index === 0;
-        up.addEventListener("click", function () {
-            move(index, -1);
-        });
-        var down = el("button", null, tr("down"));
-        down.type = "button";
-        down.disabled = index === state.layout.blocks.length - 1;
-        down.addEventListener("click", function () {
-            move(index, 1);
-        });
-        var remove = el("button", "psla-danger", tr("remove"));
-        remove.type = "button";
-        remove.addEventListener("click", function () {
-            state.layout.blocks.splice(index, 1);
-            touch();
-            renderBlocks();
-        });
-        tools.appendChild(up);
-        tools.appendChild(down);
-        tools.appendChild(remove);
-        head.appendChild(tools);
-        card.appendChild(head);
         var fields = el("div", "psla-fields");
         fields.appendChild(field(tr("variant"), selectBox(block.variant, variantOptions(), function (value) {
             block.variant = value;
@@ -568,19 +554,6 @@
         return box;
     }
 
-    function move(index, direction) {
-        var blocks = state.layout.blocks;
-        var next = index + direction;
-        if (next < 0 || next >= blocks.length) {
-            return;
-        }
-        var swap = blocks[index];
-        blocks[index] = blocks[next];
-        blocks[next] = swap;
-        touch();
-        renderBlocks();
-    }
-
     function renderBlocks() {
         var host = document.getElementById("psla-blocks");
         if (!host || !state.layout) {
@@ -589,30 +562,8 @@
         while (host.firstChild) {
             host.removeChild(host.firstChild);
         }
-        var blocks = state.layout.blocks || [];
-        var i;
-        for (i = 0; i < blocks.length; i++) {
-            lockBlock(blocks[i]);
-            host.appendChild(renderBlock(blocks[i], i));
-        }
-        var add = el("div", "psla-add");
-        var select = selectBox("portal", variantOptions(), function () {});
-        select.id = "psla-add-variant";
-        var button = el("button", "psla-btn", tr("add"));
-        button.type = "button";
-        button.addEventListener("click", function () {
-            if (state.layout.blocks.length >= 16) {
-                state.error = tr("tooMany");
-                paintBanner();
-                return;
-            }
-            state.layout.blocks.push(newBlock(select.value));
-            touch();
-            renderBlocks();
-        });
-        add.appendChild(select);
-        add.appendChild(button);
-        host.appendChild(add);
+        ensureSingleBlock();
+        host.appendChild(renderBlock(state.layout.blocks[0]));
     }
 
     function renderPreview() {
@@ -669,6 +620,7 @@
     }
 
     function shell() {
+        ensureSingleBlock();
         var root = document.getElementById("psla-settings");
         while (root.firstChild) {
             root.removeChild(root.firstChild);
@@ -797,6 +749,7 @@
     }
 
     function prepareLayout() {
+        ensureSingleBlock();
         state.layout.selectors = {};
         var blocks = state.layout.blocks || [];
         var i;

@@ -291,6 +291,13 @@ public class PortalSlaService {
         if (layout.blocks == null) {
             return;
         }
+        if (layout.blocks.size() > 1) {
+            PortalSlaLayout.Block first = layout.blocks.get(0);
+            layout.blocks = new ArrayList<PortalSlaLayout.Block>();
+            if (first != null) {
+                layout.blocks.add(first);
+            }
+        }
         for (int i = 0; i < layout.blocks.size(); i++) {
             PortalSlaLayout.Block block = layout.blocks.get(i);
             if (block == null) {

@@ -30,7 +30,7 @@ public final class LayoutSanitizer {
 
     private static final Pattern ID = Pattern.compile("^[A-Za-z0-9_-]{1,40}$");
     private static final Pattern SELECTOR = Pattern.compile("^[\\w\\s\\[\\]\\.#>:\"'=+~*^$()|,\\-]{1,180}$");
-    private static final int MAX_BLOCKS = 16;
+    private static final int MAX_BLOCKS = 1;
 
     private LayoutSanitizer() {
     }
@@ -73,9 +73,6 @@ public final class LayoutSanitizer {
         List<PortalSlaLayout.Block> source = input.blocks == null
                 ? Collections.<PortalSlaLayout.Block>emptyList()
                 : input.blocks;
-        if (source.size() > MAX_BLOCKS) {
-            errors.add("too-many-blocks");
-        }
         Set<String> usedIds = new HashSet<String>();
         int limit = Math.min(source.size(), MAX_BLOCKS);
         for (int i = 0; i < limit; i++) {

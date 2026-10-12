@@ -102,15 +102,20 @@ public class LayoutSanitizerTest {
         LayoutSanitizer.Result result = LayoutSanitizer.sanitize(layout);
 
         assertTrue(result.ok());
-        assertEquals(6, result.layout.blocks.size());
+        assertEquals(1, result.layout.blocks.size());
         assertEquals("plain", result.layout.blocks.get(0).variant);
-        assertEquals("portal", result.layout.blocks.get(1).variant);
-        assertEquals("when", result.layout.blocks.get(2).variant);
-        assertEquals("facts", result.layout.blocks.get(3).variant);
-        assertEquals("clock", result.layout.blocks.get(4).variant);
-        assertEquals("traffic", result.layout.blocks.get(5).variant);
         assertEquals("spoken", result.layout.blocks.get(0).timeStyle);
         assertFalse(result.layout.blocks.get(0).showStatus.booleanValue());
-        assertFalse(result.layout.blocks.get(1).showStatus.booleanValue());
+
+        for (int i = 0; i < variants.length; i++) {
+            PortalSlaLayout one = new PortalSlaLayout();
+            one.enabled = Boolean.TRUE;
+            PortalSlaLayout.Block only = new PortalSlaLayout.Block();
+            only.variant = variants[i];
+            one.blocks = Collections.singletonList(only);
+            LayoutSanitizer.Result accepted = LayoutSanitizer.sanitize(one);
+            assertTrue(accepted.ok());
+            assertEquals(variants[i], accepted.layout.blocks.get(0).variant);
+        }
     }
 }

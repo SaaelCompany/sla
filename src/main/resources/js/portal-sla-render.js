@@ -765,9 +765,6 @@
             var list = el("ol");
             var item = el("li", "is-" + described.state);
             var line = el("div", "psla-timeline-line");
-            if (metric.ongoing) {
-                line.appendChild(el("strong", null, t(model.locale, "ongoing")));
-            }
             line.appendChild(el("span", "psla-timeline-state", t(model.locale, described.state)));
             item.appendChild(line);
             var detail = formatDuration(metric.elapsedMs || 0, "precise", model.hoursPerDay, model.daysPerWeek, model.locale);

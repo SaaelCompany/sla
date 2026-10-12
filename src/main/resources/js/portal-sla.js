@@ -223,7 +223,11 @@
             }
             var mode = times[i].getAttribute("data-psla-mode") || "remaining";
             var ms = mode === "elapsed" ? metric.elapsedMs : mode === "goal" ? metric.goalMs : metric.remainingMs;
-            times[i].textContent = api.formatDuration(ms, block.timeStyle, lastModel.hoursPerDay, lastModel.daysPerWeek, lastModel.locale);
+            var text = api.formatDuration(ms, block.timeStyle, lastModel.hoursPerDay, lastModel.daysPerWeek, lastModel.locale);
+            if (times[i].getAttribute("data-psla-abs") === "1" && (text.charAt(0) === "\u2212" || text.charAt(0) === "-")) {
+                text = text.substring(1);
+            }
+            times[i].textContent = text;
         }
         var bars = document.querySelectorAll(".psla-fill[data-psla-bar]");
         for (i = 0; i < bars.length; i++) {
@@ -239,6 +243,24 @@
                 ratio = 1;
             }
             bars[i].style.width = Math.round(ratio * 100) + "%";
+        }
+        var clocks = document.querySelectorAll("[data-psla-clock]");
+        for (i = 0; i < clocks.length; i++) {
+            var clockMetric = findMetric(clocks[i].getAttribute("data-psla-clock"));
+            if (!clockMetric || !api.clockAngles) {
+                continue;
+            }
+            var clockMode = clocks[i].getAttribute("data-psla-mode") || "remaining";
+            var clockMs = clockMode === "elapsed" ? clockMetric.elapsedMs : clockMode === "goal" ? clockMetric.goalMs : clockMetric.remainingMs;
+            var angles = api.clockAngles(clockMs || 0);
+            var hourHand = clocks[i].querySelector(".psla-hand-hour");
+            var minuteHand = clocks[i].querySelector(".psla-hand-minute");
+            if (hourHand) {
+                hourHand.setAttribute("transform", "rotate(" + angles.hour + " 60 60)");
+            }
+            if (minuteHand) {
+                minuteHand.setAttribute("transform", "rotate(" + angles.minute + " 60 60)");
+            }
         }
     }
 

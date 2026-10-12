@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<atlassian-plugin key="com.portalsla.portal-sla" name="Portal SLA" plugins-version="2">
+<atlassian-plugin key="com.portalsla.portal-sla" name="Niout Portal SLA for JSM" plugins-version="2">
     <plugin-info>
-        <description>SLA на портале клиента Jira Service Management: несколько вариантов отображения и визуальный конструктор, где блок стоит на странице заявки.</description>
-        <version>1.0.1</version>
-        <vendor name="Portal SLA"/>
+        <description>SLA на портале клиента Jira Service Management: блок всегда внизу боковой панели, вид и метрики настраиваются в проекте.</description>
+        <version>1.0.14</version>
+        <vendor name="Niout"/>
         <param name="atlassian-data-center-status">compatible</param>
         <param name="atlassian-data-center-compatible">true</param>
         <param name="plugin-type">both</param>
@@ -16,12 +16,13 @@
     </rest>
 
     <servlet key="portal-sla-editor-servlet" class="com.portalsla.servlet.EditorServlet">
+        <url-pattern>/project-config/*/portal-sla</url-pattern>
         <url-pattern>/portal-sla/editor</url-pattern>
     </servlet>
 
     <web-item key="portal-sla-project-settings" name="Portal SLA project settings" section="atl.jira.proj.config/projectgroup4" weight="45">
         <label key="portal-sla.admin.link">SLA на портале</label>
-        <link linkId="portal-sla-admin-link">/plugins/servlet/portal-sla/editor?projectKey=$project.key</link>
+        <link linkId="portal-sla-admin-link">/plugins/servlet/project-config/$project.key/portal-sla</link>
         <condition class="com.portalsla.web.PortalSlaProjectCondition"/>
     </web-item>
 
@@ -33,23 +34,14 @@
         <resource type="download" name="portal-sla.js" location="js/portal-sla.js"/>
     </web-resource>
 
-    <web-resource key="portal-sla-editor" name="Portal SLA editor">
+    <web-resource key="portal-sla-settings" name="Portal SLA settings">
         <resource type="download" name="portal-sla.css" location="css/portal-sla.css"/>
-        <resource type="download" name="editor.css" location="css/editor.css"/>
+        <resource type="download" name="settings.css" location="css/settings.css"/>
         <resource type="download" name="portal-sla-render.js" location="js/portal-sla-render.js"/>
-        <resource type="download" name="editor.js" location="js/editor.js"/>
+        <resource type="download" name="settings.js" location="js/settings.js"/>
         <resource type="download" name="default-layout.json" location="default-layout.json"/>
     </web-resource>
 
-    <web-panel key="portal-sla-header" name="Portal SLA header" location="servicedesk.portal.header.view_request" weight="50">
-        <resource name="view" type="velocity" location="templates/mount-header.vm"/>
-    </web-panel>
-    <web-panel key="portal-sla-subheader" name="Portal SLA subheader" location="servicedesk.portal.subheader.view_request" weight="50">
-        <resource name="view" type="velocity" location="templates/mount-subheader.vm"/>
-    </web-panel>
-    <web-panel key="portal-sla-footer" name="Portal SLA footer" location="servicedesk.portal.footer.view_request" weight="50">
-        <resource name="view" type="velocity" location="templates/mount-footer.vm"/>
-    </web-panel>
     <web-panel key="portal-sla-panel" name="Portal SLA request panel" location="servicedesk.portal.request.panels" weight="10">
         <resource name="view" type="velocity" location="templates/mount-panel.vm"/>
     </web-panel>

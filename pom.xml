@@ -6,11 +6,11 @@
 
     <groupId>com.portalsla</groupId>
     <artifactId>portal-sla</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.14</version>
     <packaging>atlassian-plugin</packaging>
 
-    <name>Portal SLA</name>
-    <description>Shows SLA on the Jira Service Management customer portal and provides a visual layout editor.</description>
+    <name>Niout Portal SLA for JSM</name>
+    <description>Shows SLAs at the bottom of the Jira Service Management portal sidebar, with project display settings.</description>
 
     <properties>
         <jira.version>8.21.1</jira.version>

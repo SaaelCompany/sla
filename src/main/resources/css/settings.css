@@ -1,0 +1,363 @@
+#psla-settings {
+    color: #172B4D;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.psla-page {
+    max-width: none;
+    padding: 0 0 16px;
+}
+
+.psla-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 0 10px;
+    padding: 0;
+}
+
+.psla-top h1 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.psla-project {
+    color: #6B778C;
+}
+
+.psla-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.psla-btn,
+.psla-btn-primary {
+    border: 1px solid #DFE1E6;
+    background: #fff;
+    color: #172B4D;
+    border-radius: 3px;
+    padding: 6px 12px;
+    font: inherit;
+    cursor: pointer;
+}
+
+.psla-btn-primary {
+    background: #0052CC;
+    border-color: #0052CC;
+    color: #fff;
+}
+
+.psla-btn:hover,
+.psla-btn-primary:hover {
+    filter: brightness(0.96);
+}
+
+.psla-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.psla-banner {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border-radius: 3px;
+    background: #FFEBE6;
+    color: #BF2600;
+}
+
+.psla-banner.is-info {
+    background: #DEEBFF;
+    color: #0747A6;
+}
+
+.psla-banner:empty {
+    display: none;
+}
+
+.psla-workspace {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.psla-preview-card {
+    background: #fff;
+    border: 1px solid #DFE1E6;
+    border-radius: 3px;
+    padding: 12px 16px 4px;
+}
+
+.psla-preview-card h2 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6B778C;
+}
+
+.psla-card {
+    margin-bottom: 8px;
+    padding: 8px 12px;
+}
+
+.psla-card h2,
+.psla-side h2 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.psla-place {
+    margin: 0 0 12px;
+    color: #172B4D;
+}
+
+.psla-place strong {
+    font-weight: 600;
+}
+
+.psla-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0 0 8px;
+}
+
+.psla-field label,
+.psla-check {
+    color: #6B778C;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.psla-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #172B4D;
+    font-size: 14px;
+    font-weight: 400;
+    margin: 0 0 8px;
+}
+
+.psla-field input,
+.psla-field select,
+.psla-inline input {
+    box-sizing: border-box;
+    width: 100%;
+    border: 2px solid #DFE1E6;
+    border-radius: 3px;
+    padding: 6px 8px;
+    font: inherit;
+    color: #172B4D;
+    background: #FAFBFC;
+}
+
+.psla-field input:focus,
+.psla-field select:focus,
+.psla-inline input:focus {
+    border-color: #4C9AFF;
+    background: #fff;
+    outline: none;
+}
+
+.psla-split {
+    display: grid;
+    grid-template-columns: minmax(0, 220px) minmax(0, 220px);
+    gap: 12px;
+    justify-content: start;
+}
+
+.psla-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    gap: 0 16px;
+    align-items: start;
+}
+
+.psla-fields > .psla-checks,
+.psla-fields > .psla-span {
+    grid-column: 1 / -1;
+}
+
+.psla-checks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin: 0 0 8px;
+}
+
+.psla-checks .psla-check {
+    margin: 0;
+}
+
+.psla-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.psla-card-tools {
+    display: flex;
+    gap: 4px;
+}
+
+.psla-card-tools button,
+.psla-linkish {
+    border: 0;
+    background: transparent;
+    color: #0052CC;
+    font: inherit;
+    cursor: pointer;
+    padding: 2px 4px;
+}
+
+.psla-danger {
+    color: #DE350B;
+}
+
+.psla-add {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.psla-add select {
+    flex: 1;
+    border: 2px solid #DFE1E6;
+    border-radius: 3px;
+    padding: 6px 8px;
+    font: inherit;
+    background: #fff;
+}
+
+.psla-hint {
+    margin: 4px 0 0;
+    color: #6B778C;
+    font-size: 12px;
+}
+
+.psla-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.psla-presets button {
+    border: 1px solid #DFE1E6;
+    background: #F4F5F7;
+    border-radius: 3px;
+    padding: 4px 8px;
+    font: inherit;
+    cursor: pointer;
+}
+
+.psla-presets button.is-on {
+    background: #DEEBFF;
+    border-color: #4C9AFF;
+    color: #0747A6;
+}
+
+.psla-sidebar-preview {
+    border: 1px solid #DFE1E6;
+    border-radius: 3px;
+    padding: 12px 12px 4px;
+    background: #fff;
+}
+
+.psla-fake-field {
+    margin-bottom: 12px;
+}
+
+.psla-fake-field span {
+    display: block;
+    color: #6B778C;
+    font-size: 12px;
+}
+
+.psla-inline {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.psla-inline input {
+    flex: 1;
+}
+
+.psla-picker {
+    max-width: 640px;
+    margin: 32px auto;
+    background: #fff;
+    border: 1px solid #DFE1E6;
+    border-radius: 3px;
+    padding: 24px;
+}
+
+.psla-picker h1 {
+    margin: 0 0 8px;
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.psla-lead,
+.psla-muted {
+    color: #6B778C;
+}
+
+.psla-picker-list {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+}
+
+.psla-picker-list a {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-top: 1px solid #EBECF0;
+    color: #0052CC;
+    text-decoration: none;
+}
+
+.psla-picker-list span {
+    color: #6B778C;
+}
+
+.psla-stage-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.psla-hidden-ribbon {
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    border-radius: 3px;
+    background: #FFF0B3;
+    color: #172B4D;
+    font-size: 12px;
+}
+
+@media (max-width: 980px) {
+    .psla-workspace,
+    .psla-split,
+    .psla-fields,
+    .psla-top {
+        display: block;
+    }
+
+    .psla-actions {
+        margin-top: 12px;
+    }
+}

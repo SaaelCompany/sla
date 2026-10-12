@@ -15,21 +15,22 @@ import java.util.regex.Pattern;
 public final class LayoutSanitizer {
 
     public static final List<String> VARIANTS = Collections.unmodifiableList(Arrays.asList(
-            "compact", "badges", "progress", "countdown", "cards", "timeline", "status-strip"));
+            "compact", "badges", "progress", "cards", "timeline", "status-strip",
+            "plain", "portal", "when", "facts", "clock", "traffic"));
 
     public static final List<String> ZONES = Collections.unmodifiableList(Arrays.asList(
             "header", "under-title", "beside-status", "above-description", "above-activity",
             "sidebar-top", "sidebar-bottom", "portal-panel", "request-footer", "my-requests", "custom"));
 
     private static final List<String> TIME_MODES = Arrays.asList("remaining", "elapsed", "goal");
-    private static final List<String> TIME_STYLES = Arrays.asList("largest", "precise");
+    private static final List<String> TIME_STYLES = Arrays.asList("largest", "precise", "spoken");
     private static final List<String> TEXT_SOURCES = Arrays.asList("portal", "jira");
     private static final List<String> METRIC_MODES = Arrays.asList("customer-visible", "all", "selected");
     private static final List<String> POSITIONS = Arrays.asList("before", "after", "prepend", "append");
 
     private static final Pattern ID = Pattern.compile("^[A-Za-z0-9_-]{1,40}$");
     private static final Pattern SELECTOR = Pattern.compile("^[\\w\\s\\[\\]\\.#>:\"'=+~*^$()|,\\-]{1,180}$");
-    private static final int MAX_BLOCKS = 16;
+    private static final int MAX_BLOCKS = 1;
 
     private LayoutSanitizer() {
     }
@@ -72,9 +73,6 @@ public final class LayoutSanitizer {
         List<PortalSlaLayout.Block> source = input.blocks == null
                 ? Collections.<PortalSlaLayout.Block>emptyList()
                 : input.blocks;
-        if (source.size() > MAX_BLOCKS) {
-            errors.add("too-many-blocks");
-        }
         Set<String> usedIds = new HashSet<String>();
         int limit = Math.min(source.size(), MAX_BLOCKS);
         for (int i = 0; i < limit; i++) {
@@ -103,12 +101,12 @@ public final class LayoutSanitizer {
                                                        List<String> errors) {
         PortalSlaLayout.Block block = new PortalSlaLayout.Block();
         block.id = cleanId(raw.id, usedIds);
-        block.variant = enumValue(raw.variant, VARIANTS, "compact", "bad-variant:" + index, errors);
+        block.variant = enumValue(legacyVariant(raw.variant), VARIANTS, "compact", "bad-variant:" + index, errors);
         block.zone = enumValue(raw.zone, ZONES, "sidebar-top", "bad-zone:" + index, errors);
         block.title = cleanTitle(raw.title);
         block.collapsed = Boolean.valueOf(Boolean.TRUE.equals(raw.collapsed));
-        block.showName = Boolean.valueOf(raw.showName == null ? !"compact".equals(block.variant) : raw.showName.booleanValue());
-        block.showStatus = Boolean.valueOf(raw.showStatus == null ? "status-strip".equals(block.variant) : raw.showStatus.booleanValue());
+        block.showName = Boolean.valueOf(raw.showName == null ? !"compact".equals(block.variant) && !"status-strip".equals(block.variant) : raw.showName.booleanValue());
+        block.showStatus = Boolean.FALSE;
         block.showPauseIcon = Boolean.valueOf(raw.showPauseIcon == null || raw.showPauseIcon.booleanValue());
         block.showBreachTime = Boolean.valueOf(Boolean.TRUE.equals(raw.showBreachTime));
         block.timeMode = enumValue(raw.timeMode, TIME_MODES, "remaining", "bad-time-mode:" + index, errors);
@@ -131,6 +129,13 @@ public final class LayoutSanitizer {
             block.customSelector = "";
         }
         return block;
+    }
+
+    private static String legacyVariant(String value) {
+        if (value != null && "countdown".equals(value.trim().toLowerCase(Locale.US))) {
+            return "portal";
+        }
+        return value;
     }
 
     private static String enumValue(String value, List<String> allowed, String fallback, String code, List<String> errors) {

@@ -56,9 +56,13 @@ public class EditorServlet extends HttpServlet {
 
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
-        String projectKey = request.getParameter("projectKey");
-        if (projectKey == null || projectKey.trim().length() == 0) {
+        String projectKey = projectKey(request);
+        if (projectKey == null) {
             writePicker(response, base, service.listProjects(user));
+            return;
+        }
+        if (!inProjectConfig(request)) {
+            response.sendRedirect(base + "/plugins/servlet/project-config/" + url(projectKey) + "/portal-sla");
             return;
         }
 
@@ -77,9 +81,15 @@ public class EditorServlet extends HttpServlet {
         String locale = authenticationContext.getLocale() == null
                 ? "en"
                 : authenticationContext.getLocale().toLanguageTag();
-        String html = read("/templates/editor-shell.html")
+        // The project-settings header reads the project from this request attribute.
+        // Without it the page falls back to the global Administration screen.
+        request.setAttribute(
+                "com.atlassian.jira.projectconfig.util.ServletRequestProjectConfigRequestCache:project",
+                project);
+        String html = read("/templates/settings-shell.html")
                 .replace("@@BASE@@", esc(base))
                 .replace("@@PROJECT_KEY@@", esc(project.getKey()))
+                .replace("@@PROJECT_ID@@", esc(String.valueOf(project.getId())))
                 .replace("@@PROJECT_NAME@@", esc(project.getName()))
                 .replace("@@LOCALE@@", esc(locale))
                 .replace("@@REST@@", esc(base + "/rest/portal-sla/1.0"))
@@ -95,7 +105,7 @@ public class EditorServlet extends HttpServlet {
             list.append("<ul class=\"psla-picker-list\">");
             for (int i = 0; i < projects.size(); i++) {
                 ProjectItem project = projects.get(i);
-                String href = base + "/plugins/servlet/portal-sla/editor?projectKey=" + url(project.key);
+                String href = base + "/plugins/servlet/project-config/" + url(project.key) + "/portal-sla";
                 list.append("<li><a href=\"").append(esc(href)).append("\"><strong>")
                         .append(esc(project.name)).append("</strong><span>")
                         .append(esc(project.key)).append("</span></a></li>");
@@ -112,6 +122,43 @@ public class EditorServlet extends HttpServlet {
         return read("/templates/picker.html")
                 .replace("@@BASE@@", esc(base))
                 .replace("@@LIST@@", "<p class=\"psla-muted\">" + esc(message) + "</p>");
+    }
+
+    private String projectKey(HttpServletRequest request) {
+        String fromPath = projectKeyFromPath(request.getRequestURI());
+        if (fromPath != null) {
+            return fromPath;
+        }
+        String query = request.getParameter("projectKey");
+        if (query == null || query.trim().length() == 0) {
+            return null;
+        }
+        return query.trim();
+    }
+
+    private boolean inProjectConfig(HttpServletRequest request) {
+        return projectKeyFromPath(request.getRequestURI()) != null;
+    }
+
+    private String projectKeyFromPath(String uri) {
+        if (uri == null) {
+            return null;
+        }
+        String marker = "/project-config/";
+        int at = uri.indexOf(marker);
+        if (at < 0) {
+            return null;
+        }
+        String rest = uri.substring(at + marker.length());
+        int slash = rest.indexOf('/');
+        if (slash <= 0) {
+            return null;
+        }
+        String tail = rest.substring(slash);
+        if (!tail.equals("/portal-sla") && !tail.startsWith("/portal-sla/")) {
+            return null;
+        }
+        return rest.substring(0, slash);
     }
 
     private String baseUrl() {

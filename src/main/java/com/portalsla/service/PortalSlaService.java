@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -153,22 +154,23 @@ public class PortalSlaService {
         view.projectName = project.getName();
         view.jiraHoursPerDay = trackingHours();
         view.jiraDaysPerWeek = trackingDays();
-        if (stored.corrupt) {
+        if (stored.corrupt || stored.layout == null) {
             view.layout = layoutStore.defaults();
-            view.warning = "corrupt";
-        } else if (stored.layout == null) {
-            view.layout = layoutStore.defaults();
+            if (stored.corrupt) {
+                view.warning = "corrupt";
+            }
         } else {
             view.layout = stored.layout;
         }
-        List<CatalogMetric> catalog = catalog(user, project);
-        if (catalog == null) {
+        lockPlacement(view.layout);
+        List<CatalogMetric> metrics = catalog(user, project);
+        if (metrics == null) {
             view.catalog = new ArrayList<CatalogMetric>();
             if (view.warning == null) {
                 view.warning = "metrics-unavailable";
             }
         } else {
-            view.catalog = catalog;
+            view.catalog = metrics;
         }
         return LayoutCodec.write(view);
     }
@@ -181,10 +183,12 @@ public class PortalSlaService {
         } catch (RuntimeException ex) {
             throw new PortalSlaException(400, "invalid-json");
         }
+        lockPlacement(parsed);
         LayoutSanitizer.Result result = LayoutSanitizer.sanitize(parsed);
         if (!result.ok()) {
             throw new PortalSlaException(400, "invalid-layout", result.errors);
         }
+        lockPlacement(result.layout);
         layoutStore.save(project.getId().longValue(), result.layout);
     }
 
@@ -240,13 +244,7 @@ public class PortalSlaService {
 
     private PortalView buildView(ApplicationUser user, Issue issue, CustomerRequest request, String onlyZone) {
         Project project = projectManager.getProjectObj(issue.getProjectId());
-        LayoutStore.Stored stored = project == null
-                ? LayoutStore.Stored.missing()
-                : layoutStore.load(project.getId().longValue());
-        PortalSlaLayout layout = stored.layout;
-        if (layout == null && !stored.corrupt) {
-            layout = layoutStore.defaults();
-        }
+        PortalSlaLayout layout = layoutFor(project);
         PortalView view = new PortalView();
         view.issueKey = issue.getKey();
         view.locale = localeTag();
@@ -271,6 +269,44 @@ public class PortalSlaService {
             view.metrics = loadMetrics(user, project, issue, effective);
         }
         return view;
+    }
+
+    private PortalSlaLayout layoutFor(Project project) {
+        PortalSlaLayout layout = layoutStore.defaults();
+        if (project != null && project.getId() != null) {
+            LayoutStore.Stored stored = layoutStore.load(project.getId().longValue());
+            if (stored.layout != null) {
+                layout = stored.layout;
+            }
+        }
+        lockPlacement(layout);
+        return layout;
+    }
+
+    private void lockPlacement(PortalSlaLayout layout) {
+        if (layout == null) {
+            return;
+        }
+        layout.selectors = new LinkedHashMap<String, List<String>>();
+        if (layout.blocks == null) {
+            return;
+        }
+        if (layout.blocks.size() > 1) {
+            PortalSlaLayout.Block first = layout.blocks.get(0);
+            layout.blocks = new ArrayList<PortalSlaLayout.Block>();
+            if (first != null) {
+                layout.blocks.add(first);
+            }
+        }
+        for (int i = 0; i < layout.blocks.size(); i++) {
+            PortalSlaLayout.Block block = layout.blocks.get(i);
+            if (block == null) {
+                continue;
+            }
+            block.zone = "sidebar-bottom";
+            block.customSelector = "";
+            block.customPosition = "after";
+        }
     }
 
     private PortalSlaLayout filterZone(PortalSlaLayout layout, String zone) {
@@ -540,9 +576,9 @@ public class PortalSlaService {
         try {
             ServiceDesk desk = serviceDeskService.getServiceDeskForProject(user, project);
             Collection<TimeMetric> metrics = timeMetricService.getTimeMetrics(user, desk);
-            List<CatalogMetric> catalog = new ArrayList<CatalogMetric>();
+            List<CatalogMetric> items = new ArrayList<CatalogMetric>();
             if (metrics == null) {
-                return catalog;
+                return items;
             }
             for (TimeMetric metric : metrics) {
                 if (metric == null || metric.getId() == null) {
@@ -552,14 +588,55 @@ public class PortalSlaService {
                 item.id = metric.getId().intValue();
                 item.name = metric.getName() == null ? ("SLA #" + metric.getId()) : metric.getName();
                 item.customerVisible = metric.isCustomerVisible();
-                catalog.add(item);
+                items.add(item);
             }
-            return catalog;
+            return items;
         } catch (RuntimeException ex) {
             log.warn("Cannot read SLA metrics for project {}", project.getKey());
             log.debug("SLA metric catalogue failed", ex);
             return null;
         }
+    }
+
+    private Issue requireIssueInProject(String issueKey, Project project) {
+        if (issueKey == null || !ISSUE_KEY.matcher(issueKey.toUpperCase(Locale.US)).matches()) {
+            throw new PortalSlaException(404, "not-found");
+        }
+        Issue issue = issueManager.getIssueByCurrentKey(issueKey.toUpperCase(Locale.US));
+        if (issue == null || issue.getProjectId() == null
+                || issue.getProjectId().longValue() != project.getId().longValue()) {
+            throw new PortalSlaException(404, "not-found");
+        }
+        return issue;
+    }
+
+    private Project requireServiceProjectAdmin(ApplicationUser user, String projectKey) {
+        if (user == null) {
+            throw new PortalSlaException(401, "auth");
+        }
+        if (projectKey == null || !PROJECT_KEY.matcher(projectKey).matches()) {
+            throw new PortalSlaException(404, "not-found");
+        }
+        Project project = projectManager.getProjectByCurrentKey(projectKey);
+        if (project == null || project.getId() == null) {
+            throw new PortalSlaException(404, "not-found");
+        }
+        if (!isProjectAdmin(user, project)) {
+            throw new PortalSlaException(403, "forbidden");
+        }
+        try {
+            serviceDeskService.getServiceDeskForProject(user, project);
+        } catch (ServiceDeskServiceException ex) {
+            throw new PortalSlaException(404, "not-service-desk");
+        }
+        return project;
+    }
+
+    private boolean isProjectAdmin(ApplicationUser user, Project project) {
+        if (permissionManager.hasPermission(ProjectPermissions.ADMINISTER_PROJECTS, project, user)) {
+            return true;
+        }
+        return globalPermissionManager.hasPermission(GlobalPermissionKey.ADMINISTER, user);
     }
 
     private StatusView statusOf(ApplicationUser user, Issue issue, CustomerRequest request) {
@@ -610,47 +687,6 @@ public class PortalSlaService {
         } catch (ServiceDeskServiceException ex) {
             throw new PortalSlaException(404, "not-found");
         }
-    }
-
-    private Issue requireIssueInProject(String issueKey, Project project) {
-        if (issueKey == null || !ISSUE_KEY.matcher(issueKey.toUpperCase(Locale.US)).matches()) {
-            throw new PortalSlaException(404, "not-found");
-        }
-        Issue issue = issueManager.getIssueByCurrentKey(issueKey.toUpperCase(Locale.US));
-        if (issue == null || issue.getProjectId() == null
-                || issue.getProjectId().longValue() != project.getId().longValue()) {
-            throw new PortalSlaException(404, "not-found");
-        }
-        return issue;
-    }
-
-    private Project requireServiceProjectAdmin(ApplicationUser user, String projectKey) {
-        if (user == null) {
-            throw new PortalSlaException(401, "auth");
-        }
-        if (projectKey == null || !PROJECT_KEY.matcher(projectKey).matches()) {
-            throw new PortalSlaException(404, "not-found");
-        }
-        Project project = projectManager.getProjectByCurrentKey(projectKey);
-        if (project == null || project.getId() == null) {
-            throw new PortalSlaException(404, "not-found");
-        }
-        if (!isProjectAdmin(user, project)) {
-            throw new PortalSlaException(403, "forbidden");
-        }
-        try {
-            serviceDeskService.getServiceDeskForProject(user, project);
-        } catch (ServiceDeskServiceException ex) {
-            throw new PortalSlaException(404, "not-service-desk");
-        }
-        return project;
-    }
-
-    private boolean isProjectAdmin(ApplicationUser user, Project project) {
-        if (permissionManager.hasPermission(ProjectPermissions.ADMINISTER_PROJECTS, project, user)) {
-            return true;
-        }
-        return globalPermissionManager.hasPermission(GlobalPermissionKey.ADMINISTER, user);
     }
 
     private int minRefresh(List<PortalSlaLayout.Block> blocks) {

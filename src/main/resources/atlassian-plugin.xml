@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <atlassian-plugin key="com.portalsla.portal-sla" name="Portal SLA" plugins-version="2">
     <plugin-info>
-        <description>SLA на портале клиента Jira Service Management: блок внизу боковой панели заявки.</description>
-        <version>1.0.2</version>
+        <description>SLA на портале клиента Jira Service Management: блок всегда внизу боковой панели, вид и метрики настраиваются в проекте.</description>
+        <version>1.0.3</version>
         <vendor name="Portal SLA"/>
         <param name="atlassian-data-center-status">compatible</param>
         <param name="atlassian-data-center-compatible">true</param>
@@ -15,12 +15,30 @@
         <package>com.portalsla.rest</package>
     </rest>
 
+    <servlet key="portal-sla-editor-servlet" class="com.portalsla.servlet.EditorServlet">
+        <url-pattern>/portal-sla/editor</url-pattern>
+    </servlet>
+
+    <web-item key="portal-sla-project-settings" name="Portal SLA project settings" section="atl.jira.proj.config/projectgroup4" weight="45">
+        <label key="portal-sla.admin.link">SLA на портале</label>
+        <link linkId="portal-sla-admin-link">/plugins/servlet/portal-sla/editor?projectKey=$project.key</link>
+        <condition class="com.portalsla.web.PortalSlaProjectCondition"/>
+    </web-item>
+
     <web-resource key="portal-sla-customer" name="Portal SLA customer">
         <context>customerportal</context>
         <context>servicedesk.portal</context>
         <resource type="download" name="portal-sla.css" location="css/portal-sla.css"/>
         <resource type="download" name="portal-sla-render.js" location="js/portal-sla-render.js"/>
         <resource type="download" name="portal-sla.js" location="js/portal-sla.js"/>
+    </web-resource>
+
+    <web-resource key="portal-sla-settings" name="Portal SLA settings">
+        <resource type="download" name="portal-sla.css" location="css/portal-sla.css"/>
+        <resource type="download" name="settings.css" location="css/settings.css"/>
+        <resource type="download" name="portal-sla-render.js" location="js/portal-sla-render.js"/>
+        <resource type="download" name="settings.js" location="js/settings.js"/>
+        <resource type="download" name="default-layout.json" location="default-layout.json"/>
     </web-resource>
 
     <web-panel key="portal-sla-panel" name="Portal SLA request panel" location="servicedesk.portal.request.panels" weight="10">

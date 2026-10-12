@@ -59,7 +59,7 @@
                 badges: "Плашки",
                 progress: "Полоса",
                 cards: "Подробно",
-                timeline: "История",
+                timeline: "Хронология",
                 "status-strip": "В одну строку",
                 clock: "Часы",
                 traffic: "Светофор"
@@ -93,7 +93,7 @@
             }
         },
         en: {
-            title: "Portal SLA",
+            title: "Niout Portal SLA for JSM",
             projects: "Project settings",
             show: "Show to customers",
             reset: "Reset",
@@ -143,7 +143,7 @@
                 badges: "Badges",
                 progress: "Bar",
                 cards: "Details",
-                timeline: "History",
+                timeline: "Chronology",
                 "status-strip": "One line",
                 clock: "Clock",
                 traffic: "Traffic light"
@@ -249,6 +249,33 @@
         ];
     }
 
+    function sampleCycles(goal, remaining, elapsed, options) {
+        var started = Date.now() - Math.max(elapsed, 60 * 1000);
+        var span = Math.max(goal, 60 * 1000);
+        return [
+            {
+                ongoing: false,
+                breached: false,
+                paused: false,
+                elapsedMs: span,
+                remainingMs: 0,
+                goalMs: goal,
+                startTimeMs: started - span,
+                stopTimeMs: started
+            },
+            {
+                ongoing: options.ongoing !== false,
+                breached: !!options.breached,
+                paused: !!options.paused,
+                elapsedMs: elapsed,
+                remainingMs: remaining,
+                goalMs: goal,
+                startTimeMs: started,
+                stopTimeMs: options.ongoing === false ? Date.now() : null
+            }
+        ];
+    }
+
     function metric(id, name, options) {
         var goal = options.goal * dayMs();
         var remaining = options.remaining * dayMs();
@@ -267,14 +294,7 @@
             breachTimeMs: Date.now() + remaining,
             startTimeMs: Date.now() - Math.max(elapsed, 60 * 1000),
             stopTimeMs: options.ongoing === false ? Date.now() : null,
-            cycles: [{
-                ongoing: options.ongoing !== false,
-                breached: !!options.breached,
-                paused: !!options.paused,
-                elapsedMs: elapsed,
-                remainingMs: remaining,
-                goalMs: goal
-            }]
+            cycles: sampleCycles(goal, remaining, elapsed, options)
         };
     }
 

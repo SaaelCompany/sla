@@ -25,10 +25,11 @@ public class PluginDescriptorTest {
         File descriptor = new File("target/classes/atlassian-plugin.xml");
         assertTrue("Filtered Atlassian plugin descriptor must exist", descriptor.isFile());
 
-        NodeList elements = DocumentBuilderFactory.newInstance()
+        org.w3c.dom.Document document = DocumentBuilderFactory.newInstance()
                 .newDocumentBuilder()
-                .parse(descriptor)
-                .getElementsByTagName("*");
+                .parse(descriptor);
+        assertEquals("Niout Portal SLA for JSM", document.getDocumentElement().getAttribute("name"));
+        NodeList elements = document.getElementsByTagName("*");
         Map<String, String> declarations = new HashMap<String, String>();
 
         for (int i = 0; i < elements.getLength(); i++) {

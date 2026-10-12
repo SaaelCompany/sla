@@ -18,7 +18,8 @@
             breach: "Срок",
             overdueLabel: "Опоздание",
             outside: "Вне графика",
-            cycle: "Шаг",
+            ongoing: "Текущий",
+            cycle: "Цикл",
             leftHead: "Осталось ",
             leftTail: "",
             riskHead: "Осталось мало: ",
@@ -54,7 +55,8 @@
             breach: "Due",
             overdueLabel: "Overdue",
             outside: "Outside hours",
-            cycle: "Step",
+            ongoing: "Current",
+            cycle: "Cycle",
             leftHead: "",
             leftTail: " left",
             riskHead: "Only ",
@@ -736,6 +738,17 @@
         list.appendChild(row);
     }
 
+    function ongoingCycleState(metric, block, cycle) {
+        if (cycle.breached) {
+            return "breached";
+        }
+        var state = describe(metric, block.riskPercent).state;
+        if (state === "paused" || state === "at_risk" || state === "running" || state === "breached") {
+            return state;
+        }
+        return "running";
+    }
+
     function renderTimeline(body, block, model, metrics) {
         var i;
         var c;
@@ -750,14 +763,11 @@
                 var list = el("ol");
                 for (c = 0; c < items.length; c++) {
                     var cycle = items[c];
-                    var state = cycle.ongoing ? describe(metric, block.riskPercent).state : (cycle.breached ? "missed" : "met");
+                    var state = cycle.ongoing ? ongoingCycleState(metric, block, cycle) : (cycle.breached ? "missed" : "met");
                     var li = el("li", "is-" + (cycle.breached ? "breached" : "met"));
-                    var title = t(model.locale, state);
-                    if (!cycle.ongoing && items.length > 1) {
-                        title = (c + 1) + ". " + title;
-                    }
-                    li.appendChild(el("strong", null, title));
-                    var detail = formatDuration(cycle.elapsedMs || 0, block.timeStyle === "spoken" ? "spoken" : "precise", model.hoursPerDay, model.daysPerWeek, model.locale);
+                    var title = cycle.ongoing ? t(model.locale, "ongoing") : t(model.locale, "cycle") + " " + (c + 1);
+                    li.appendChild(el("strong", null, title + " · " + t(model.locale, state)));
+                    var detail = formatDuration(cycle.elapsedMs || 0, "precise", model.hoursPerDay, model.daysPerWeek, model.locale);
                     var range = when(cycle.startTimeMs, model.locale);
                     if (cycle.stopTimeMs) {
                         range += " — " + when(cycle.stopTimeMs, model.locale);

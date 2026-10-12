@@ -933,6 +933,204 @@
         return sub;
     }
 
+    function clockAngles(ms) {
+        var abs = ms < 0 ? -ms : ms;
+        var minutesTotal = Math.floor(abs / 60000);
+        var minutes = minutesTotal % 60;
+        var hours = Math.floor(minutesTotal / 60) % 12;
+        return {
+            minute: minutes * 6,
+            hour: hours * 30 + minutes * 0.5
+        };
+    }
+
+    function svgEl(name, attrs) {
+        var node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        var key;
+        for (key in attrs) {
+            if (Object.prototype.hasOwnProperty.call(attrs, key)) {
+                node.setAttribute(key, attrs[key]);
+            }
+        }
+        return node;
+    }
+
+    function clockRim(state) {
+        if (state === "breached" || state === "missed") {
+            return "#FF5630";
+        }
+        if (state === "at_risk") {
+            return "#FFAB00";
+        }
+        if (state === "paused" || state === "inactive") {
+            return "#6B778C";
+        }
+        return "#36B37E";
+    }
+
+    function clockFace(metric, block, model, described) {
+        var ms = described.state === "met" || described.state === "inactive" ? 0 : primaryMs(metric, block.timeMode || "remaining");
+        var angles = clockAngles(ms || 0);
+        var face = svgEl("svg", {"class": "psla-clock-face", viewBox: "0 0 120 120", "aria-hidden": "true"});
+        face.setAttribute("data-psla-clock", String(metric.id));
+        face.setAttribute("data-psla-mode", block.timeMode || "remaining");
+        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "56", fill: "#FFFFFF", stroke: clockRim(described.state), "stroke-width": "4"}));
+        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "50", fill: "#FAFBFC", stroke: "#DFE1E6", "stroke-width": "1"}));
+        var i;
+        for (i = 0; i < 12; i++) {
+            face.appendChild(svgEl("line", {
+                x1: "60",
+                y1: "16",
+                x2: "60",
+                y2: i % 3 === 0 ? "24" : "20",
+                transform: "rotate(" + (i * 30) + " 60 60)",
+                stroke: "#172B4D",
+                "stroke-width": i % 3 === 0 ? "2" : "1",
+                "stroke-linecap": "round"
+            }));
+        }
+        var numerals = ["12", "3", "6", "9"];
+        var spots = [{x: "60", y: "38"}, {x: "88", y: "64"}, {x: "60", y: "96"}, {x: "32", y: "64"}];
+        for (i = 0; i < numerals.length; i++) {
+            var numeral = svgEl("text", {
+                x: spots[i].x,
+                y: spots[i].y,
+                "text-anchor": "middle",
+                "font-size": "11",
+                "font-family": "sans-serif",
+                fill: "#172B4D"
+            });
+            numeral.textContent = numerals[i];
+            face.appendChild(numeral);
+        }
+        face.appendChild(svgEl("line", {
+            "class": "psla-hand-hour",
+            x1: "60",
+            y1: "60",
+            x2: "60",
+            y2: "36",
+            stroke: "#172B4D",
+            "stroke-width": "3.5",
+            "stroke-linecap": "round",
+            transform: "rotate(" + angles.hour + " 60 60)"
+        }));
+        face.appendChild(svgEl("line", {
+            "class": "psla-hand-minute",
+            x1: "60",
+            y1: "64",
+            x2: "60",
+            y2: "26",
+            stroke: "#172B4D",
+            "stroke-width": "2",
+            "stroke-linecap": "round",
+            transform: "rotate(" + angles.minute + " 60 60)"
+        }));
+        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "3.5", fill: clockRim(described.state)}));
+        var abs = ms < 0 ? -ms : (ms || 0);
+        var dayHours = model.hoursPerDay < 1 || model.hoursPerDay > 24 ? 8 : model.hoursPerDay;
+        var days = Math.floor(abs / (dayHours * 60 * 60 * 1000));
+        if (days > 0 && described.state !== "met" && described.state !== "inactive") {
+            var badge = svgEl("text", {
+                x: "60",
+                y: "78",
+                "text-anchor": "middle",
+                "font-size": "12",
+                "font-family": "sans-serif",
+                "font-weight": "600",
+                fill: "#172B4D"
+            });
+            badge.textContent = String(days) + (isRussian(model.locale) ? "д" : "d");
+            face.appendChild(badge);
+        }
+        return face;
+    }
+
+    function captionMeta(metric, block, model, described) {
+        if (described.state === "met" || described.state === "inactive" || described.state === "missed") {
+            return null;
+        }
+        var meta = el("div", "psla-clock-meta");
+        var due = dueText(block, metric, model);
+        if ((described.state === "breached") && metric.remainingMs < 0) {
+            appendBits(meta, [t(model.locale, "subOver"), absTimeNode(metric, block, model, described)]);
+            if (due) {
+                meta.appendChild(document.createTextNode(t(model.locale, "subWas") + due));
+            }
+            return meta;
+        }
+        meta.appendChild(timeNode(metric, block, model, described));
+        if (due) {
+            meta.appendChild(document.createTextNode(" \u2014 " + due));
+        }
+        return meta;
+    }
+
+    function renderClock(body, block, model, metrics) {
+        var i;
+        for (i = 0; i < metrics.length; i++) {
+            var metric = metrics[i];
+            var described = describe(metric, block.riskPercent);
+            var item = el("div", "psla-clock-item psla-state-" + described.state);
+            var clockBlock = asRemaining(block);
+            item.appendChild(clockFace(metric, clockBlock, model, described));
+            var copy = el("div", "psla-clock-copy");
+            if (block.showName) {
+                copy.appendChild(el("div", "psla-portal-name", metric.name));
+            }
+            copy.appendChild(el("div", "psla-clock-state", t(model.locale, described.state)));
+            var meta = captionMeta(metric, clockBlock, model, described);
+            if (meta) {
+                copy.appendChild(meta);
+            }
+            item.appendChild(copy);
+            body.appendChild(item);
+        }
+    }
+
+    function trafficLamp(state) {
+        if (state === "breached" || state === "missed") {
+            return "red";
+        }
+        if (state === "at_risk" || state === "paused") {
+            return "yellow";
+        }
+        if (state === "inactive") {
+            return "";
+        }
+        return "green";
+    }
+
+    function renderTraffic(body, block, model, metrics) {
+        var i;
+        var colors = ["red", "yellow", "green"];
+        for (i = 0; i < metrics.length; i++) {
+            var metric = metrics[i];
+            var described = describe(metric, block.riskPercent);
+            var lit = trafficLamp(described.state);
+            var item = el("div", "psla-traffic-item psla-state-" + described.state);
+            var signal = el("div", "psla-signal");
+            signal.setAttribute("aria-hidden", "true");
+            var c;
+            for (c = 0; c < colors.length; c++) {
+                var lamp = el("span", "psla-lamp is-" + colors[c] + (colors[c] === lit ? " is-on" : ""));
+                signal.appendChild(lamp);
+            }
+            item.appendChild(signal);
+            var copy = el("div", "psla-traffic-copy");
+            if (block.showName) {
+                copy.appendChild(el("div", "psla-portal-name", metric.name));
+            }
+            copy.appendChild(el("div", "psla-traffic-state", t(model.locale, described.state)));
+            var meta = captionMeta(metric, asRemaining(block), model, described);
+            if (meta) {
+                meta.className = "psla-traffic-meta";
+                copy.appendChild(meta);
+            }
+            item.appendChild(copy);
+            body.appendChild(item);
+        }
+    }
+
     function renderFacts(body, block, model, metrics) {
         var i;
         for (i = 0; i < metrics.length; i++) {
@@ -974,7 +1172,9 @@
         plain: renderPlain,
         portal: renderPortal,
         when: renderWhen,
-        facts: renderFacts
+        facts: renderFacts,
+        clock: renderClock,
+        traffic: renderTraffic
     };
 
     function render(container, block, model, options) {
@@ -1029,6 +1229,7 @@
         describe: describe,
         zones: ZONES,
         zone: zone,
-        metricsFor: metricsFor
+        metricsFor: metricsFor,
+        clockAngles: clockAngles
     };
 })(window);

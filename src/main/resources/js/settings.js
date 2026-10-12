@@ -44,6 +44,22 @@
             tooMany: "Уже 16 блоков.",
             confirmReset: "Вернуть настройки по умолчанию? Несохранённые правки пропадут.",
             preview: "Так это выглядит у клиента",
+            helpCenter: "Центр поддержки",
+            sampleTitle: "Не работает принтер на 3 этаже",
+            sampleStatus: "Открыто повторно",
+            commentPlaceholder: "Прокомментировать запрос...",
+            details: "Подробности",
+            detailsWhen: "Вчера 3:00 PM",
+            description: "Описание",
+            descriptionBody: "Тест важная информация",
+            fieldUser: "Пользователь",
+            fieldUserValue: "DESKTOP-Q9Q19G\\iout",
+            fieldPc: "Компьютер",
+            fieldPcValue: "DESKTOP-Q9Q19G",
+            notify: "Не уведомляйте меня",
+            share: "Общий доступ",
+            reporterName: "admin",
+            powered: "Работает на базе",
             issue: "Ключ заявки",
             applyIssue: "Показать",
             sample: "Пример",
@@ -63,7 +79,9 @@
                 countdown: "Крупный остаток",
                 cards: "Подробно",
                 timeline: "История",
-                "status-strip": "В одну строку"
+                "status-strip": "В одну строку",
+                clock: "Часы",
+                traffic: "Светофор"
             },
             modes: {remaining: "Осталось", elapsed: "Прошло", goal: "Цель"},
             styles: {spoken: "Словами (1 день 2 часа)", largest: "Крупная единица (1 д.)", precise: "Две единицы (1 д. 2 ч.)"},
@@ -129,6 +147,22 @@
             tooMany: "There are already 16 blocks.",
             confirmReset: "Restore the default settings? Unsaved changes will be lost.",
             preview: "What the customer sees",
+            helpCenter: "Help Center",
+            sampleTitle: "Printer on floor 3 is down",
+            sampleStatus: "Reopened",
+            commentPlaceholder: "Comment on this request...",
+            details: "Details",
+            detailsWhen: "Yesterday 3:00 PM",
+            description: "Description",
+            descriptionBody: "The printer in room 312 does not print.",
+            fieldUser: "User",
+            fieldUserValue: "DESKTOP-Q9Q19G\\iout",
+            fieldPc: "Computer",
+            fieldPcValue: "DESKTOP-Q9Q19G",
+            notify: "Don't notify me",
+            share: "Share",
+            reporterName: "admin",
+            powered: "Powered by",
             issue: "Request key",
             applyIssue: "Show",
             sample: "Sample",
@@ -148,7 +182,9 @@
                 countdown: "Large remainder",
                 cards: "Details",
                 timeline: "History",
-                "status-strip": "One line"
+                "status-strip": "One line",
+                clock: "Clock",
+                traffic: "Traffic light"
             },
             modes: {remaining: "Remaining", elapsed: "Elapsed", goal: "Goal"},
             styles: {spoken: "Words (1 day 2 hours)", largest: "Largest unit (1d)", precise: "Two units (1d 2h)"},
@@ -180,7 +216,7 @@
         }
     };
 
-    var VARIANT_ORDER = ["plain", "portal", "when", "facts", "compact", "badges", "progress", "countdown", "cards", "timeline", "status-strip"];
+    var VARIANT_ORDER = ["plain", "portal", "when", "facts", "clock", "traffic", "compact", "badges", "progress", "countdown", "cards", "timeline", "status-strip"];
     var state = {
         layout: null,
         factory: null,
@@ -351,9 +387,9 @@
             showName: variant !== "compact" && variant !== "status-strip",
             showStatus: false,
             showPauseIcon: true,
-            showBreachTime: variant === "cards" || variant === "countdown" || variant === "plain" || variant === "portal" || variant === "when" || variant === "facts",
+            showBreachTime: variant === "cards" || variant === "countdown" || variant === "plain" || variant === "portal" || variant === "when" || variant === "facts" || variant === "clock" || variant === "traffic",
             timeMode: "remaining",
-            timeStyle: variant === "plain" ? "spoken" : (variant === "cards" || variant === "countdown" || variant === "timeline" || variant === "portal" ? "precise" : "largest"),
+            timeStyle: variant === "plain" ? "spoken" : (variant === "cards" || variant === "countdown" || variant === "timeline" || variant === "portal" || variant === "clock" || variant === "traffic" ? "precise" : "largest"),
             textSource: "portal",
             metricMode: "customer-visible",
             metricIds: [],
@@ -635,6 +671,118 @@
         for (i = 0; i < buttons.length; i++) {
             buttons[i].className = buttons[i].getAttribute("data-preset") === state.preset && !state.live ? "is-on" : "";
         }
+        var ribbon = document.getElementById("psla-hidden");
+        if (ribbon) {
+            ribbon.style.display = state.layout.enabled ? "none" : "block";
+        }
+    }
+
+    function miniIcon(name) {
+        var span = el("span", "psla-mini");
+        span.setAttribute("aria-hidden", "true");
+        if (name === "clip") {
+            span.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6.2 8.8l4.2-4.2a2 2 0 0 1 2.8 2.8l-5.4 5.4a3.2 3.2 0 0 1-4.5-4.5l5.2-5.2" stroke-linecap="round"></path></svg>';
+        } else if (name === "bell") {
+            span.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 7.2a4 4 0 0 1 8 0c0 2.2.6 3 1.1 3.6H2.9C3.4 10.2 4 9.4 4 7.2z"></path><path d="M6.5 12.2a1.5 1.5 0 0 0 3 0" stroke-linecap="round"></path></svg>';
+        } else if (name === "share") {
+            span.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="4" cy="8" r="1.4"></circle><circle cx="12" cy="4.2" r="1.4"></circle><circle cx="12" cy="11.8" r="1.4"></circle><path d="M5.3 7.3l5.3-2.4M5.3 8.7l5.3 2.4"></path></svg>';
+        } else {
+            span.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#FFAB00" stroke-width="1.6"><path d="M9 18h6M10 21h4" stroke-linecap="round"></path><path d="M12 3a6 6 0 0 0-3.2 11c.4.4.7.9.8 1.5h4.8c.1-.6.4-1.1.8-1.5A6 6 0 0 0 12 3z"></path></svg>';
+        }
+        return span;
+    }
+
+    function personRow(letter, name) {
+        var row = el("div", "psla-person");
+        row.appendChild(el("span", "psla-avatar is-small", letter));
+        row.appendChild(el("span", null, name));
+        return row;
+    }
+
+    function detailField(label, value) {
+        var box = el("div", "psla-detail-block");
+        box.appendChild(el("div", "psla-field-label", label));
+        box.appendChild(el("div", "psla-field-value", value));
+        return box;
+    }
+
+    function jiraHeader() {
+        var bar = el("header", "psla-jira-header");
+        var brand = el("div", "psla-jira-brand");
+        var mark = el("span", "psla-jira-mark");
+        mark.setAttribute("aria-hidden", "true");
+        brand.appendChild(mark);
+        brand.appendChild(el("strong", null, "Jira Service Management"));
+        bar.appendChild(brand);
+        var side = el("div", "psla-jira-user");
+        side.appendChild(el("span", null, tr("helpCenter")));
+        side.appendChild(el("span", "psla-avatar is-small", "A"));
+        bar.appendChild(side);
+        return bar;
+    }
+
+    function portalPage() {
+        var frame = el("div", "psla-portal-frame");
+        var key = state.projectKey || "SD";
+        var crumb = el("div", "psla-crumb");
+        var bulb = miniIcon("bulb");
+        bulb.className = "psla-bulb";
+        crumb.appendChild(bulb);
+        var trail = el("div", "psla-trail");
+        trail.appendChild(el("span", "psla-link", tr("helpCenter")));
+        trail.appendChild(el("span", "psla-sep", "/"));
+        trail.appendChild(el("span", "psla-link", state.projectName || key));
+        trail.appendChild(el("span", "psla-sep", "/"));
+        trail.appendChild(el("span", "psla-link", key + "-22"));
+        crumb.appendChild(trail);
+        frame.appendChild(crumb);
+
+        var request = el("article", "psla-request");
+        request.appendChild(el("h1", "psla-req-title", tr("sampleTitle")));
+        var comment = el("div", "psla-comment");
+        comment.appendChild(el("span", "psla-avatar", lang() === "ru" ? "И" : "A"));
+        var fieldBox = el("div", "psla-comment-field");
+        fieldBox.appendChild(el("span", null, tr("commentPlaceholder")));
+        fieldBox.appendChild(miniIcon("clip"));
+        comment.appendChild(fieldBox);
+        request.appendChild(comment);
+
+        var layout = el("div", "psla-request-grid");
+        var main = el("div", "psla-main");
+        var detailsHead = el("div", "psla-details-head");
+        detailsHead.appendChild(el("strong", null, tr("details")));
+        detailsHead.appendChild(el("span", null, tr("detailsWhen")));
+        main.appendChild(detailsHead);
+        main.appendChild(detailField(tr("description"), tr("descriptionBody")));
+        main.appendChild(detailField(tr("fieldUser"), tr("fieldUserValue")));
+        main.appendChild(detailField(tr("fieldPc"), tr("fieldPcValue")));
+        layout.appendChild(main);
+
+        var side = el("aside", "psla-portal-side");
+        side.appendChild(el("span", "psla-open", tr("sampleStatus")));
+        var notify = el("div", "psla-side-link");
+        notify.appendChild(miniIcon("bell"));
+        notify.appendChild(el("span", null, tr("notify")));
+        side.appendChild(notify);
+        var share = el("div", "psla-side-link");
+        share.appendChild(miniIcon("share"));
+        share.appendChild(el("span", null, tr("share")));
+        side.appendChild(share);
+        side.appendChild(el("div", "psla-side-label", tr("assignee")));
+        side.appendChild(personRow("A", "admin"));
+        side.appendChild(el("div", "psla-side-label", tr("reporter")));
+        side.appendChild(personRow("A", tr("reporterName")));
+        var host = el("div");
+        host.id = "psla-preview-host";
+        side.appendChild(host);
+        layout.appendChild(side);
+        request.appendChild(layout);
+        frame.appendChild(request);
+        var powered = el("div", "psla-powered");
+        powered.appendChild(document.createTextNode(tr("powered") + " "));
+        powered.appendChild(el("strong", null, "Jira Service Management"));
+        frame.appendChild(powered);
+        return frame;
     }
 
     function paintBanner() {
@@ -659,6 +807,7 @@
             root.removeChild(root.firstChild);
         }
         var page = el("main", "psla-page");
+        page.appendChild(jiraHeader());
         var top = el("div", "psla-top");
         var titles = el("div");
         titles.appendChild(el("h1", null, tr("title")));
@@ -703,30 +852,9 @@
         page.appendChild(el("div", "psla-banner", ""));
         page.lastChild.id = "psla-banner";
 
-        var grid = el("div", "psla-grid");
-        var form = el("div");
-        var general = el("section", "psla-card");
-        general.appendChild(el("h2", null, tr("general")));
-        general.appendChild(el("p", "psla-place", tr("place")));
-        var split = el("div", "psla-split");
-        split.appendChild(field(tr("day"), numberBox(state.layout.hoursPerDay || 0, 0, 24, function (value) {
-            state.layout.hoursPerDay = value;
-            touch();
-        })));
-        split.appendChild(field(tr("week"), numberBox(state.layout.daysPerWeek || 0, 0, 7, function (value) {
-            state.layout.daysPerWeek = value;
-            touch();
-        })));
-        general.appendChild(split);
-        general.appendChild(el("p", "psla-hint", tr("dayHint") + state.jiraHoursPerDay + " / " + state.jiraDaysPerWeek));
-        form.appendChild(general);
-        var blocks = el("div");
-        blocks.id = "psla-blocks";
-        form.appendChild(blocks);
-        grid.appendChild(form);
-
-        var side = el("aside", "psla-side");
-        side.appendChild(el("h2", null, tr("preview")));
+        var grid = el("div", "psla-workspace");
+        var stage = el("section", "psla-stage");
+        var stageBar = el("div", "psla-stage-bar");
         var presets = el("div", "psla-presets");
         var names = tr("presets");
         var keys = ["paused", "running", "risk", "breached", "done"];
@@ -744,14 +872,7 @@
                 presets.appendChild(button);
             }(keys[i]));
         }
-        side.appendChild(presets);
-        var frame = el("div", "psla-sidebar-preview");
-        frame.appendChild(fakeField(tr("assignee"), "admin"));
-        frame.appendChild(fakeField(tr("reporter"), "admin"));
-        var host = el("div");
-        host.id = "psla-preview-host";
-        frame.appendChild(host);
-        side.appendChild(frame);
+        stageBar.appendChild(presets);
         if (!state.mock) {
             var issueRow = el("div", "psla-inline");
             var issue = document.createElement("input");
@@ -771,21 +892,46 @@
             issueRow.appendChild(issue);
             issueRow.appendChild(apply);
             issueRow.appendChild(sample);
-            side.appendChild(issueRow);
+            stageBar.appendChild(issueRow);
         }
-        grid.appendChild(side);
+        stage.appendChild(stageBar);
+        var ribbon = el("div", "psla-hidden-ribbon", tr("hidden") || "");
+        ribbon.id = "psla-hidden";
+        ribbon.style.display = "none";
+        if (!tr("hidden")) {
+            ribbon.textContent = lang() === "ru"
+                ? "Клиенты это пока не видят. Включите «Показывать клиентам» и сохраните."
+                : "Customers cannot see this yet. Turn on “Show to customers” and save.";
+        }
+        stage.appendChild(ribbon);
+        stage.appendChild(portalPage());
+        grid.appendChild(stage);
+
+        var form = el("aside", "psla-inspector");
+        var general = el("section", "psla-card");
+        general.appendChild(el("h2", null, tr("general")));
+        general.appendChild(el("p", "psla-place", tr("place")));
+        var split = el("div", "psla-split");
+        split.appendChild(field(tr("day"), numberBox(state.layout.hoursPerDay || 0, 0, 24, function (value) {
+            state.layout.hoursPerDay = value;
+            touch();
+        })));
+        split.appendChild(field(tr("week"), numberBox(state.layout.daysPerWeek || 0, 0, 7, function (value) {
+            state.layout.daysPerWeek = value;
+            touch();
+        })));
+        general.appendChild(split);
+        general.appendChild(el("p", "psla-hint", tr("dayHint") + state.jiraHoursPerDay + " / " + state.jiraDaysPerWeek));
+        form.appendChild(general);
+        var blocks = el("div");
+        blocks.id = "psla-blocks";
+        form.appendChild(blocks);
+        grid.appendChild(form);
         page.appendChild(grid);
         root.appendChild(page);
         renderBlocks();
         renderPreview();
         paintBanner();
-    }
-
-    function fakeField(label, value) {
-        var row = el("div", "psla-fake-field");
-        row.appendChild(el("span", null, label));
-        row.appendChild(el("strong", null, value));
-        return row;
     }
 
     function prepareLayout() {

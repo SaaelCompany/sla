@@ -6,7 +6,7 @@
 
     <groupId>com.portalsla</groupId>
     <artifactId>portal-sla</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <packaging>atlassian-plugin</packaging>
 
     <name>Portal SLA</name>

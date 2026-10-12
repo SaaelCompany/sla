@@ -16,7 +16,7 @@ public final class LayoutSanitizer {
 
     public static final List<String> VARIANTS = Collections.unmodifiableList(Arrays.asList(
             "compact", "badges", "progress", "countdown", "cards", "timeline", "status-strip",
-            "plain", "portal", "when", "facts"));
+            "plain", "portal", "when", "facts", "clock", "traffic"));
 
     public static final List<String> ZONES = Collections.unmodifiableList(Arrays.asList(
             "header", "under-title", "beside-status", "above-description", "above-activity",

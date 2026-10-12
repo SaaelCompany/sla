@@ -8,9 +8,9 @@
 }
 
 .psla-page {
-    max-width: 1080px;
+    max-width: 1280px;
     margin: 0 auto;
-    padding: 24px 24px 48px;
+    padding: 0 0 48px;
 }
 
 .psla-top {
@@ -18,7 +18,10 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
-    margin-bottom: 16px;
+    margin: 0;
+    padding: 12px 24px;
+    background: #fff;
+    border-bottom: 1px solid #DFE1E6;
 }
 
 .psla-top h1 {
@@ -65,7 +68,7 @@
 }
 
 .psla-banner {
-    margin: 0 0 16px;
+    margin: 12px 24px 0;
     padding: 10px 12px;
     border-radius: 3px;
     background: #FFEBE6;
@@ -81,21 +84,20 @@
     display: none;
 }
 
-.psla-grid {
+.psla-workspace {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 20px;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 16px;
     align-items: start;
+    padding: 16px 24px 0;
 }
 
 .psla-card,
-.psla-side {
+.psla-inspector {
     position: sticky;
     top: 16px;
-    background: #fff;
-    border: 1px solid #DFE1E6;
-    border-radius: 3px;
-    padding: 16px;
+    max-height: calc(100vh - 32px);
+    overflow: auto;
 }
 
 .psla-card {
@@ -306,8 +308,238 @@
     color: #6B778C;
 }
 
-@media (max-width: 800px) {
-    .psla-grid,
+.psla-jira-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 24px;
+    background: #0052CC;
+    color: #fff;
+}
+
+.psla-jira-brand,
+.psla-jira-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.psla-jira-mark {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: inset 0 0 0 6px #0052CC, inset 0 0 0 8px #fff;
+}
+
+.psla-jira-header .psla-avatar {
+    background: #DEEBFF;
+    color: #0052CC;
+}
+
+.psla-stage-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.psla-hidden-ribbon {
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    border-radius: 3px;
+    background: #FFF0B3;
+    color: #172B4D;
+    font-size: 12px;
+}
+
+.psla-portal-frame {
+    border: 1px solid #DFE1E6;
+    border-radius: 3px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 1px 1px rgba(9, 30, 66, 0.13);
+}
+
+.psla-crumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 24px 0;
+}
+
+.psla-bulb {
+    width: 20px;
+    height: 20px;
+    color: #FFAB00;
+    flex: 0 0 20px;
+}
+
+.psla-bulb svg,
+.psla-mini svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
+.psla-bulb svg {
+    width: 20px;
+    height: 20px;
+}
+
+.psla-link {
+    color: #0052CC;
+}
+
+.psla-sep {
+    margin: 0 6px;
+    color: #6B778C;
+}
+
+.psla-request {
+    margin: 0;
+    padding: 4px 24px 8px;
+}
+
+.psla-req-title {
+    margin: 8px 0 0;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.25;
+}
+
+.psla-comment {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0 20px;
+}
+
+.psla-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    border-radius: 50%;
+    background: #DFE1E6;
+    color: #42526E;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.psla-avatar.is-small {
+    width: 24px;
+    height: 24px;
+    flex-basis: 24px;
+    font-size: 11px;
+}
+
+.psla-comment-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 2px solid #DFE1E6;
+    border-radius: 3px;
+    color: #97A0AF;
+    background: #fff;
+}
+
+.psla-mini {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    color: #6B778C;
+}
+
+.psla-request-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 28px;
+}
+
+.psla-details-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin: 0 0 12px;
+}
+
+.psla-field-label,
+.psla-side-label,
+.psla-details-head span {
+    color: #6B778C;
+    font-size: 12px;
+}
+
+.psla-field-label {
+    margin-top: 12px;
+}
+
+.psla-field-value {
+    margin-top: 2px;
+}
+
+.psla-portal-side {
+    border-left: 1px solid #EBECF0;
+    padding-left: 16px;
+}
+
+.psla-open {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 3px;
+    background: #172B4D;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.psla-side-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+    color: #0052CC;
+}
+
+.psla-side-link .psla-mini {
+    color: #0052CC;
+}
+
+.psla-side-label {
+    margin: 14px 0 4px;
+}
+
+.psla-person {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.psla-powered {
+    padding: 20px 16px 16px;
+    border-top: 1px solid #F4F5F7;
+    color: #6B778C;
+    font-size: 12px;
+    text-align: center;
+}
+
+.psla-powered strong {
+    color: #42526E;
+}
+
+@media (max-width: 980px) {
+    .psla-workspace,
+    .psla-request-grid,
     .psla-split,
     .psla-top {
         display: block;

@@ -244,6 +244,24 @@
             }
             bars[i].style.width = Math.round(ratio * 100) + "%";
         }
+        var clocks = document.querySelectorAll("[data-psla-clock]");
+        for (i = 0; i < clocks.length; i++) {
+            var clockMetric = findMetric(clocks[i].getAttribute("data-psla-clock"));
+            if (!clockMetric || !api.clockAngles) {
+                continue;
+            }
+            var clockMode = clocks[i].getAttribute("data-psla-mode") || "remaining";
+            var clockMs = clockMode === "elapsed" ? clockMetric.elapsedMs : clockMode === "goal" ? clockMetric.goalMs : clockMetric.remainingMs;
+            var angles = api.clockAngles(clockMs || 0);
+            var hourHand = clocks[i].querySelector(".psla-hand-hour");
+            var minuteHand = clocks[i].querySelector(".psla-hand-minute");
+            if (hourHand) {
+                hourHand.setAttribute("transform", "rotate(" + angles.hour + " 60 60)");
+            }
+            if (minuteHand) {
+                minuteHand.setAttribute("transform", "rotate(" + angles.minute + " 60 60)");
+            }
+        }
     }
 
     function arm(model, key) {

@@ -24,7 +24,9 @@
 .psla-variant-plain,
 .psla-variant-portal,
 .psla-variant-when,
-.psla-variant-facts {
+.psla-variant-facts,
+.psla-variant-clock,
+.psla-variant-traffic {
     max-width: 280px;
 }
 
@@ -550,9 +552,84 @@
 .psla-dense .psla-plain,
 .psla-dense .psla-portal-item,
 .psla-dense .psla-when,
-.psla-dense .psla-facts {
+.psla-dense .psla-facts,
+.psla-dense .psla-clock-item,
+.psla-dense .psla-traffic-item {
     padding-top: 0;
     padding-bottom: 4px;
     margin-top: 0;
     margin-bottom: 0;
+}
+
+.psla-clock-item,
+.psla-traffic-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0 12px;
+}
+
+.psla-clock-face {
+    width: 84px;
+    height: 84px;
+    flex: 0 0 84px;
+    filter: drop-shadow(0 1px 1px rgba(9, 30, 66, 0.18));
+}
+
+.psla-clock-copy,
+.psla-traffic-copy {
+    min-width: 0;
+}
+
+.psla-clock-state,
+.psla-traffic-state {
+    font-size: 14px;
+    color: #172B4D;
+}
+
+.psla-clock-meta,
+.psla-traffic-meta {
+    margin-top: 2px;
+    color: #6B778C;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.psla-clock-meta .psla-time,
+.psla-traffic-meta .psla-time {
+    color: inherit;
+    font-size: inherit;
+}
+
+.psla-signal {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 28px;
+    padding: 8px 6px;
+    border-radius: 14px;
+    background: #172B4D;
+    flex: 0 0 28px;
+}
+
+.psla-lamp {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #253858;
+}
+
+.psla-lamp.is-red.is-on {
+    background: #FF5630;
+    box-shadow: 0 0 8px #FF5630;
+}
+
+.psla-lamp.is-yellow.is-on {
+    background: #FFAB00;
+    box-shadow: 0 0 8px #FFAB00;
+}
+
+.psla-lamp.is-green.is-on {
+    background: #36B37E;
+    box-shadow: 0 0 8px #36B37E;
 }

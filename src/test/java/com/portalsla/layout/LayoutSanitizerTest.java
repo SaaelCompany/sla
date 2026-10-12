@@ -88,7 +88,7 @@ public class LayoutSanitizerTest {
     public void acceptsCustomerVariantsAndDropsRequestStatus() {
         PortalSlaLayout layout = new PortalSlaLayout();
         layout.enabled = Boolean.TRUE;
-        String[] variants = new String[] {"plain", "portal", "when", "facts"};
+        String[] variants = new String[] {"plain", "portal", "when", "facts", "clock", "traffic"};
         layout.blocks = new ArrayList<PortalSlaLayout.Block>();
         for (int i = 0; i < variants.length; i++) {
             PortalSlaLayout.Block block = new PortalSlaLayout.Block();
@@ -102,11 +102,13 @@ public class LayoutSanitizerTest {
         LayoutSanitizer.Result result = LayoutSanitizer.sanitize(layout);
 
         assertTrue(result.ok());
-        assertEquals(4, result.layout.blocks.size());
+        assertEquals(6, result.layout.blocks.size());
         assertEquals("plain", result.layout.blocks.get(0).variant);
         assertEquals("portal", result.layout.blocks.get(1).variant);
         assertEquals("when", result.layout.blocks.get(2).variant);
         assertEquals("facts", result.layout.blocks.get(3).variant);
+        assertEquals("clock", result.layout.blocks.get(4).variant);
+        assertEquals("traffic", result.layout.blocks.get(5).variant);
         assertEquals("spoken", result.layout.blocks.get(0).timeStyle);
         assertFalse(result.layout.blocks.get(0).showStatus.booleanValue());
         assertFalse(result.layout.blocks.get(1).showStatus.booleanValue());

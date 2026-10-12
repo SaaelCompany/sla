@@ -7,6 +7,9 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -52,5 +55,24 @@ public class PluginDescriptorTest {
             in.close();
         }
         assertEquals("SLA на портале", properties.getProperty("portal-sla.admin.link"));
+    }
+
+    @Test
+    public void settingsPageDeclaresProjectAdminContext() throws Exception {
+        String shell = read("src/main/resources/templates/settings-shell.html");
+        assertTrue(shell.contains("name=\"admin.active.section\" content=\"atl.jira.proj.config\""));
+        assertTrue(shell.contains("name=\"projectKey\" content=\"@@PROJECT_KEY@@\""));
+        assertTrue(shell.contains("name=\"projectId\" content=\"@@PROJECT_ID@@\""));
+        assertTrue(shell.contains("name=\"admin.active.tab\" content=\"portal-sla-admin-link\""));
+        String servlet = read("src/main/java/com/portalsla/servlet/EditorServlet.java");
+        assertTrue(servlet.contains("@@PROJECT_ID@@"));
+        assertTrue(servlet.contains("ServletRequestProjectConfigRequestCache:project"));
+        String settings = read("src/main/resources/js/settings.js");
+        assertTrue(!settings.contains("psla-portal-frame"));
+        assertTrue(!settings.contains("Не работает принтер"));
+    }
+
+    private static String read(String path) throws Exception {
+        return new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
     }
 }

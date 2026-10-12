@@ -43,28 +43,10 @@
             remove: "Удалить",
             tooMany: "Уже 16 блоков.",
             confirmReset: "Вернуть настройки по умолчанию? Несохранённые правки пропадут.",
-            preview: "Так это выглядит у клиента",
-            helpCenter: "Центр поддержки",
-            sampleTitle: "Не работает принтер на 3 этаже",
-            sampleStatus: "Открыто повторно",
-            commentPlaceholder: "Прокомментировать запрос...",
-            details: "Подробности",
-            detailsWhen: "Вчера 3:00 PM",
-            description: "Описание",
-            descriptionBody: "Тест важная информация",
-            fieldUser: "Пользователь",
-            fieldUserValue: "DESKTOP-Q9Q19G\\iout",
-            fieldPc: "Компьютер",
-            fieldPcValue: "DESKTOP-Q9Q19G",
-            notify: "Не уведомляйте меня",
-            share: "Общий доступ",
-            reporterName: "admin",
-            powered: "Работает на базе",
+            preview: "Так блок выглядит у клиента",
             issue: "Ключ заявки",
             applyIssue: "Показать",
             sample: "Пример",
-            assignee: "Передано",
-            reporter: "Инициатор",
             corrupt: "Сохранённые настройки повреждены. Показан вариант по умолчанию — сохраните его, чтобы заменить старый.",
             metricsUnavailable: "Список SLA проекта сейчас недоступен. Можно оставить «Только отмеченные на портале» или «Все SLA».",
             noSelection: "Для режима «Только выбранные» отметьте хотя бы одну метрику.",
@@ -146,28 +128,10 @@
             remove: "Remove",
             tooMany: "There are already 16 blocks.",
             confirmReset: "Restore the default settings? Unsaved changes will be lost.",
-            preview: "What the customer sees",
-            helpCenter: "Help Center",
-            sampleTitle: "Printer on floor 3 is down",
-            sampleStatus: "Reopened",
-            commentPlaceholder: "Comment on this request...",
-            details: "Details",
-            detailsWhen: "Yesterday 3:00 PM",
-            description: "Description",
-            descriptionBody: "The printer in room 312 does not print.",
-            fieldUser: "User",
-            fieldUserValue: "DESKTOP-Q9Q19G\\iout",
-            fieldPc: "Computer",
-            fieldPcValue: "DESKTOP-Q9Q19G",
-            notify: "Don't notify me",
-            share: "Share",
-            reporterName: "admin",
-            powered: "Powered by",
+            preview: "How the block looks to a customer",
             issue: "Request key",
             applyIssue: "Show",
             sample: "Sample",
-            assignee: "Assignee",
-            reporter: "Reporter",
             corrupt: "The saved settings are damaged. The default is shown — save it to replace the old one.",
             metricsUnavailable: "This project's SLA list is unavailable. “Show on portal” or “Every project SLA” still work.",
             noSelection: "Tick at least one metric for “Selected only”.",
@@ -677,97 +641,13 @@
         }
     }
 
-    function miniIcon(name) {
-        var span = el("span", "psla-mini");
-        span.setAttribute("aria-hidden", "true");
-        if (name === "clip") {
-            span.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6.2 8.8l4.2-4.2a2 2 0 0 1 2.8 2.8l-5.4 5.4a3.2 3.2 0 0 1-4.5-4.5l5.2-5.2" stroke-linecap="round"></path></svg>';
-        } else if (name === "bell") {
-            span.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 7.2a4 4 0 0 1 8 0c0 2.2.6 3 1.1 3.6H2.9C3.4 10.2 4 9.4 4 7.2z"></path><path d="M6.5 12.2a1.5 1.5 0 0 0 3 0" stroke-linecap="round"></path></svg>';
-        } else if (name === "share") {
-            span.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="4" cy="8" r="1.4"></circle><circle cx="12" cy="4.2" r="1.4"></circle><circle cx="12" cy="11.8" r="1.4"></circle><path d="M5.3 7.3l5.3-2.4M5.3 8.7l5.3 2.4"></path></svg>';
-        } else {
-            span.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#FFAB00" stroke-width="1.6"><path d="M9 18h6M10 21h4" stroke-linecap="round"></path><path d="M12 3a6 6 0 0 0-3.2 11c.4.4.7.9.8 1.5h4.8c.1-.6.4-1.1.8-1.5A6 6 0 0 0 12 3z"></path></svg>';
-        }
-        return span;
-    }
-
-    function personRow(letter, name) {
-        var row = el("div", "psla-person");
-        row.appendChild(el("span", "psla-avatar is-small", letter));
-        row.appendChild(el("span", null, name));
-        return row;
-    }
-
-    function detailField(label, value) {
-        var box = el("div", "psla-detail-block");
-        box.appendChild(el("div", "psla-field-label", label));
-        box.appendChild(el("div", "psla-field-value", value));
-        return box;
-    }
-
-    function portalPage() {
-        var frame = el("div", "psla-portal-frame");
-        var key = state.projectKey || "SD";
-        var crumb = el("div", "psla-crumb");
-        var bulb = miniIcon("bulb");
-        bulb.className = "psla-bulb";
-        crumb.appendChild(bulb);
-        var trail = el("div", "psla-trail");
-        trail.appendChild(el("span", "psla-link", tr("helpCenter")));
-        trail.appendChild(el("span", "psla-sep", "/"));
-        trail.appendChild(el("span", "psla-link", state.projectName || key));
-        trail.appendChild(el("span", "psla-sep", "/"));
-        trail.appendChild(el("span", "psla-link", key + "-22"));
-        crumb.appendChild(trail);
-        frame.appendChild(crumb);
-
-        var request = el("article", "psla-request");
-        request.appendChild(el("h1", "psla-req-title", tr("sampleTitle")));
-        var comment = el("div", "psla-comment");
-        comment.appendChild(el("span", "psla-avatar", lang() === "ru" ? "И" : "A"));
-        var fieldBox = el("div", "psla-comment-field");
-        fieldBox.appendChild(el("span", null, tr("commentPlaceholder")));
-        fieldBox.appendChild(miniIcon("clip"));
-        comment.appendChild(fieldBox);
-        request.appendChild(comment);
-
-        var layout = el("div", "psla-request-grid");
-        var main = el("div", "psla-main");
-        var detailsHead = el("div", "psla-details-head");
-        detailsHead.appendChild(el("strong", null, tr("details")));
-        detailsHead.appendChild(el("span", null, tr("detailsWhen")));
-        main.appendChild(detailsHead);
-        main.appendChild(detailField(tr("description"), tr("descriptionBody")));
-        main.appendChild(detailField(tr("fieldUser"), tr("fieldUserValue")));
-        main.appendChild(detailField(tr("fieldPc"), tr("fieldPcValue")));
-        layout.appendChild(main);
-
-        var side = el("aside", "psla-portal-side");
-        side.appendChild(el("span", "psla-open", tr("sampleStatus")));
-        var notify = el("div", "psla-side-link");
-        notify.appendChild(miniIcon("bell"));
-        notify.appendChild(el("span", null, tr("notify")));
-        side.appendChild(notify);
-        var share = el("div", "psla-side-link");
-        share.appendChild(miniIcon("share"));
-        share.appendChild(el("span", null, tr("share")));
-        side.appendChild(share);
-        side.appendChild(el("div", "psla-side-label", tr("assignee")));
-        side.appendChild(personRow("A", "admin"));
-        side.appendChild(el("div", "psla-side-label", tr("reporter")));
-        side.appendChild(personRow("A", tr("reporterName")));
+    function previewCard() {
+        var card = el("div", "psla-preview-card");
+        card.appendChild(el("h2", null, tr("preview")));
         var host = el("div");
         host.id = "psla-preview-host";
-        side.appendChild(host);
-        layout.appendChild(side);
-        request.appendChild(layout);
-        frame.appendChild(request);
-        var powered = el("div", "psla-powered");
-        powered.appendChild(document.createTextNode(tr("powered") + " "));
-        powered.appendChild(el("strong", null, "Jira Service Management"));
-        frame.appendChild(powered);
-        return frame;
+        card.appendChild(host);
+        return card;
     }
 
     function paintBanner() {
@@ -795,11 +675,7 @@
         var top = el("div", "psla-top");
         var titles = el("div");
         titles.appendChild(el("h1", null, tr("title")));
-        var project = el("div", "psla-project", state.projectName + " · " + state.projectKey);
-        titles.appendChild(project);
-        var back = el("a", null, tr("projects"));
-        back.href = (state.base || "") + "/plugins/servlet/project-config/" + encodeURIComponent(state.projectKey) + "/summary";
-        titles.appendChild(back);
+        titles.appendChild(el("div", "psla-project", state.projectName + " · " + state.projectKey));
         top.appendChild(titles);
         var actions = el("div", "psla-actions");
         var enabled = document.createElement("input");
@@ -888,7 +764,7 @@
                 : "Customers cannot see this yet. Turn on “Show to customers” and save.";
         }
         stage.appendChild(ribbon);
-        stage.appendChild(portalPage());
+        stage.appendChild(previewCard());
         grid.appendChild(stage);
 
         var form = el("aside", "psla-inspector");

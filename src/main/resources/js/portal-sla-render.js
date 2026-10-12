@@ -974,74 +974,59 @@
         var face = svgEl("svg", {"class": "psla-clock-face", viewBox: "0 0 120 120", "aria-hidden": "true"});
         face.setAttribute("data-psla-clock", String(metric.id));
         face.setAttribute("data-psla-mode", block.timeMode || "remaining");
-        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "56", fill: "#FFFFFF", stroke: clockRim(described.state), "stroke-width": "4"}));
-        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "50", fill: "#FAFBFC", stroke: "#DFE1E6", "stroke-width": "1"}));
+        face.appendChild(svgEl("circle", {
+            cx: "60",
+            cy: "60",
+            r: "54",
+            fill: "none",
+            stroke: clockRim(described.state),
+            "stroke-width": "3"
+        }));
+        face.appendChild(svgEl("circle", {
+            cx: "60",
+            cy: "60",
+            r: "46",
+            fill: "#FFFFFF",
+            stroke: "#DFE1E6",
+            "stroke-width": "2"
+        }));
         var i;
         for (i = 0; i < 12; i++) {
             face.appendChild(svgEl("line", {
                 x1: "60",
-                y1: "16",
+                y1: "20",
                 x2: "60",
-                y2: i % 3 === 0 ? "24" : "20",
+                y2: i % 3 === 0 ? "30" : "26",
                 transform: "rotate(" + (i * 30) + " 60 60)",
-                stroke: "#172B4D",
-                "stroke-width": i % 3 === 0 ? "2" : "1",
+                stroke: i % 3 === 0 ? "#6B778C" : "#C1C7D0",
+                "stroke-width": i % 3 === 0 ? "3" : "2",
                 "stroke-linecap": "round"
             }));
-        }
-        var numerals = ["12", "3", "6", "9"];
-        var spots = [{x: "60", y: "38"}, {x: "88", y: "64"}, {x: "60", y: "96"}, {x: "32", y: "64"}];
-        for (i = 0; i < numerals.length; i++) {
-            var numeral = svgEl("text", {
-                x: spots[i].x,
-                y: spots[i].y,
-                "text-anchor": "middle",
-                "font-size": "11",
-                "font-family": "sans-serif",
-                fill: "#172B4D"
-            });
-            numeral.textContent = numerals[i];
-            face.appendChild(numeral);
         }
         face.appendChild(svgEl("line", {
             "class": "psla-hand-hour",
             x1: "60",
-            y1: "60",
+            y1: "64",
             x2: "60",
-            y2: "36",
+            y2: "38",
             stroke: "#172B4D",
-            "stroke-width": "3.5",
+            "stroke-width": "4",
             "stroke-linecap": "round",
             transform: "rotate(" + angles.hour + " 60 60)"
         }));
         face.appendChild(svgEl("line", {
             "class": "psla-hand-minute",
             x1: "60",
-            y1: "64",
+            y1: "66",
             x2: "60",
-            y2: "26",
+            y2: "28",
             stroke: "#172B4D",
-            "stroke-width": "2",
+            "stroke-width": "2.5",
             "stroke-linecap": "round",
             transform: "rotate(" + angles.minute + " 60 60)"
         }));
-        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "3.5", fill: clockRim(described.state)}));
-        var abs = ms < 0 ? -ms : (ms || 0);
-        var dayHours = model.hoursPerDay < 1 || model.hoursPerDay > 24 ? 8 : model.hoursPerDay;
-        var days = Math.floor(abs / (dayHours * 60 * 60 * 1000));
-        if (days > 0 && described.state !== "met" && described.state !== "inactive") {
-            var badge = svgEl("text", {
-                x: "60",
-                y: "78",
-                "text-anchor": "middle",
-                "font-size": "12",
-                "font-family": "sans-serif",
-                "font-weight": "600",
-                fill: "#172B4D"
-            });
-            badge.textContent = String(days) + (isRussian(model.locale) ? "д" : "d");
-            face.appendChild(badge);
-        }
+        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "4", fill: "#172B4D"}));
+        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "2", fill: clockRim(described.state)}));
         return face;
     }
 

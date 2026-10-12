@@ -81,9 +81,15 @@ public class EditorServlet extends HttpServlet {
         String locale = authenticationContext.getLocale() == null
                 ? "en"
                 : authenticationContext.getLocale().toLanguageTag();
+        // The project-settings header reads the project from this request attribute.
+        // Without it the page falls back to the global Administration screen.
+        request.setAttribute(
+                "com.atlassian.jira.projectconfig.util.ServletRequestProjectConfigRequestCache:project",
+                project);
         String html = read("/templates/settings-shell.html")
                 .replace("@@BASE@@", esc(base))
                 .replace("@@PROJECT_KEY@@", esc(project.getKey()))
+                .replace("@@PROJECT_ID@@", esc(String.valueOf(project.getId())))
                 .replace("@@PROJECT_NAME@@", esc(project.getName()))
                 .replace("@@LOCALE@@", esc(locale))
                 .replace("@@REST@@", esc(base + "/rest/portal-sla/1.0"))

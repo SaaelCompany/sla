@@ -2,7 +2,7 @@
 <atlassian-plugin key="com.portalsla.portal-sla" name="Portal SLA" plugins-version="2">
     <plugin-info>
         <description>SLA на портале клиента Jira Service Management: блок всегда внизу боковой панели, вид и метрики настраиваются в проекте.</description>
-        <version>1.0.4</version>
+        <version>1.0.5</version>
         <vendor name="Portal SLA"/>
         <param name="atlassian-data-center-status">compatible</param>
         <param name="atlassian-data-center-compatible">true</param>
@@ -16,12 +16,13 @@
     </rest>
 
     <servlet key="portal-sla-editor-servlet" class="com.portalsla.servlet.EditorServlet">
+        <url-pattern>/project-config/*/portal-sla</url-pattern>
         <url-pattern>/portal-sla/editor</url-pattern>
     </servlet>
 
     <web-item key="portal-sla-project-settings" name="Portal SLA project settings" section="atl.jira.proj.config/projectgroup4" weight="45">
         <label key="portal-sla.admin.link">SLA на портале</label>
-        <link linkId="portal-sla-admin-link">/plugins/servlet/portal-sla/editor?projectKey=$project.key</link>
+        <link linkId="portal-sla-admin-link">/plugins/servlet/project-config/$project.key/portal-sla</link>
         <condition class="com.portalsla.web.PortalSlaProjectCondition"/>
     </web-item>
 

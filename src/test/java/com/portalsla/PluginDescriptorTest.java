@@ -6,9 +6,12 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -37,5 +40,17 @@ public class PluginDescriptorTest {
             assertNull("Duplicate plugin key '" + key + "' in <" + previousTag + "> and <" + tag + ">",
                     previousTag);
         }
+    }
+
+    @Test
+    public void russianProjectLinkUsesPropertiesEscapes() throws Exception {
+        Properties properties = new Properties();
+        FileInputStream in = new FileInputStream("src/main/resources/portal-sla_ru_RU.properties");
+        try {
+            properties.load(in);
+        } finally {
+            in.close();
+        }
+        assertEquals("SLA на портале", properties.getProperty("portal-sla.admin.link"));
     }
 }

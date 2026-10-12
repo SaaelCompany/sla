@@ -10,7 +10,7 @@
     var UI = {
         ru: {
             title: "SLA на портале",
-            projects: "Все проекты",
+            projects: "Настройки проекта",
             show: "Показывать клиентам",
             reset: "Сбросить",
             save: "Сохранить",
@@ -113,7 +113,7 @@
         },
         en: {
             title: "Portal SLA",
-            projects: "All projects",
+            projects: "Project settings",
             show: "Show to customers",
             reset: "Reset",
             save: "Save",
@@ -706,21 +706,6 @@
         return box;
     }
 
-    function jiraHeader() {
-        var bar = el("header", "psla-jira-header");
-        var brand = el("div", "psla-jira-brand");
-        var mark = el("span", "psla-jira-mark");
-        mark.setAttribute("aria-hidden", "true");
-        brand.appendChild(mark);
-        brand.appendChild(el("strong", null, "Jira Service Management"));
-        bar.appendChild(brand);
-        var side = el("div", "psla-jira-user");
-        side.appendChild(el("span", null, tr("helpCenter")));
-        side.appendChild(el("span", "psla-avatar is-small", "A"));
-        bar.appendChild(side);
-        return bar;
-    }
-
     function portalPage() {
         var frame = el("div", "psla-portal-frame");
         var key = state.projectKey || "SD";
@@ -807,14 +792,13 @@
             root.removeChild(root.firstChild);
         }
         var page = el("main", "psla-page");
-        page.appendChild(jiraHeader());
         var top = el("div", "psla-top");
         var titles = el("div");
         titles.appendChild(el("h1", null, tr("title")));
         var project = el("div", "psla-project", state.projectName + " · " + state.projectKey);
         titles.appendChild(project);
         var back = el("a", null, tr("projects"));
-        back.href = (state.base || "") + "/plugins/servlet/portal-sla/editor";
+        back.href = (state.base || "") + "/plugins/servlet/project-config/" + encodeURIComponent(state.projectKey) + "/summary";
         titles.appendChild(back);
         top.appendChild(titles);
         var actions = el("div", "psla-actions");
@@ -1039,8 +1023,12 @@
         });
     }
 
+    function host() {
+        return document.getElementById("psla-settings") || document.body;
+    }
+
     function defaultsUrl() {
-        var body = document.body;
+        var body = host();
         var explicit = body.getAttribute("data-layout-url");
         if (explicit) {
             return explicit;
@@ -1049,7 +1037,7 @@
     }
 
     function load() {
-        var body = document.body;
+        var body = host();
         state.mock = body.getAttribute("data-mock") === "true";
         state.locale = body.getAttribute("data-locale") || (navigator.language || "ru");
         state.projectKey = body.getAttribute("data-project-key") || "SD";

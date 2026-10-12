@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 public final class LayoutSanitizer {
 
     public static final List<String> VARIANTS = Collections.unmodifiableList(Arrays.asList(
-            "compact", "badges", "progress", "countdown", "cards", "timeline", "status-strip",
+            "compact", "badges", "progress", "cards", "timeline", "status-strip",
             "plain", "portal", "when", "facts", "clock", "traffic"));
 
     public static final List<String> ZONES = Collections.unmodifiableList(Arrays.asList(
@@ -101,7 +101,7 @@ public final class LayoutSanitizer {
                                                        List<String> errors) {
         PortalSlaLayout.Block block = new PortalSlaLayout.Block();
         block.id = cleanId(raw.id, usedIds);
-        block.variant = enumValue(raw.variant, VARIANTS, "compact", "bad-variant:" + index, errors);
+        block.variant = enumValue(legacyVariant(raw.variant), VARIANTS, "compact", "bad-variant:" + index, errors);
         block.zone = enumValue(raw.zone, ZONES, "sidebar-top", "bad-zone:" + index, errors);
         block.title = cleanTitle(raw.title);
         block.collapsed = Boolean.valueOf(Boolean.TRUE.equals(raw.collapsed));
@@ -129,6 +129,13 @@ public final class LayoutSanitizer {
             block.customSelector = "";
         }
         return block;
+    }
+
+    private static String legacyVariant(String value) {
+        if (value != null && "countdown".equals(value.trim().toLowerCase(Locale.US))) {
+            return "portal";
+        }
+        return value;
     }
 
     private static String enumValue(String value, List<String> allowed, String fallback, String code, List<String> errors) {

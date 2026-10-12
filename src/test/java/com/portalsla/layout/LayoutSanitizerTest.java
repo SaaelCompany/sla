@@ -118,4 +118,18 @@ public class LayoutSanitizerTest {
             assertEquals(variants[i], accepted.layout.blocks.get(0).variant);
         }
     }
+
+    @Test
+    public void mapsRemovedCountdownVariantToPortal() {
+        PortalSlaLayout layout = new PortalSlaLayout();
+        layout.enabled = Boolean.TRUE;
+        PortalSlaLayout.Block block = new PortalSlaLayout.Block();
+        block.variant = "countdown";
+        layout.blocks = Collections.singletonList(block);
+
+        LayoutSanitizer.Result result = LayoutSanitizer.sanitize(layout);
+
+        assertTrue(result.ok());
+        assertEquals("portal", result.layout.blocks.get(0).variant);
+    }
 }

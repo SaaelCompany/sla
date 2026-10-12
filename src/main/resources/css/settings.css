@@ -6,7 +6,7 @@
 
 .psla-page {
     max-width: none;
-    padding: 0 0 32px;
+    padding: 0 0 16px;
 }
 
 .psla-top {
@@ -14,7 +14,7 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
-    margin: 0 0 16px;
+    margin: 0 0 10px;
     padding: 0;
 }
 
@@ -81,7 +81,7 @@
 .psla-workspace {
     display: grid;
     grid-template-columns: 320px minmax(0, 1fr);
-    gap: 24px;
+    gap: 16px;
     align-items: start;
 }
 
@@ -93,19 +93,20 @@
 }
 
 .psla-preview-card h2 {
-    margin: 0 0 12px;
+    margin: 0 0 8px;
     font-size: 12px;
     font-weight: 600;
     color: #6B778C;
 }
 
 .psla-card {
-    margin-bottom: 12px;
+    margin-bottom: 8px;
+    padding: 8px 12px;
 }
 
 .psla-card h2,
 .psla-side h2 {
-    margin: 0 0 12px;
+    margin: 0 0 8px;
     font-size: 14px;
     font-weight: 600;
 }
@@ -119,14 +120,14 @@
     font-weight: 600;
 }
 
-.psla-row {
+.psla-field {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin: 0 0 12px;
+    gap: 2px;
+    margin: 0 0 8px;
 }
 
-.psla-row label,
+.psla-field label,
 .psla-check {
     color: #6B778C;
     font-size: 12px;
@@ -144,8 +145,8 @@
     margin: 0 0 8px;
 }
 
-.psla-row input,
-.psla-row select,
+.psla-field input,
+.psla-field select,
 .psla-inline input {
     box-sizing: border-box;
     width: 100%;
@@ -157,8 +158,8 @@
     background: #FAFBFC;
 }
 
-.psla-row input:focus,
-.psla-row select:focus,
+.psla-field input:focus,
+.psla-field select:focus,
 .psla-inline input:focus {
     border-color: #4C9AFF;
     background: #fff;
@@ -188,7 +189,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 4px 16px;
-    margin: 0 0 12px;
+    margin: 0 0 8px;
 }
 
 .psla-checks .psla-check {
@@ -247,7 +248,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .psla-presets button {

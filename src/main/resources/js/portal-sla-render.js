@@ -22,8 +22,10 @@
             leftHead: "Осталось ",
             leftTail: "",
             riskHead: "Осталось мало: ",
-            pauseHead: "На паузе. Осталось ",
+            pauseHead: "Осталось ",
             pauseMid: ", время не идёт",
+            dueLead: "Срок — ",
+            sentencePassed: "Срок уже прошёл.",
             overHead: "Срок уже прошёл ",
             overTail: " назад.",
             dueJoin: ". Срок — ",
@@ -56,8 +58,10 @@
             leftHead: "",
             leftTail: " left",
             riskHead: "Only ",
-            pauseHead: "Paused. ",
+            pauseHead: "",
             pauseMid: " left, the clock is stopped",
+            dueLead: "Due ",
+            sentencePassed: "The due time has already passed.",
             overHead: "Overdue by ",
             overTail: ".",
             dueJoin: ". Due ",
@@ -530,10 +534,13 @@
         var due = dueText(block, metric, model);
         var state = described.state;
         if (state === "met") {
-            return [t(locale, "sentenceMet")];
+            if (!due) {
+                return [];
+            }
+            return [t(locale, "dueLead") + due + t(locale, "endMark")];
         }
         if (state === "missed") {
-            return [t(locale, "sentenceMissed")];
+            return [t(locale, "sentencePassed")];
         }
         if (state === "inactive") {
             return [t(locale, "sentenceNone")];
@@ -613,13 +620,11 @@
         var i;
         for (i = 0; i < metrics.length; i++) {
             var described = describe(metrics[i], block.riskPercent);
-            var row = el("div", "psla-row psla-state-" + described.state);
-            var main = el("div", "psla-row-main");
+            var row = el("div", "psla-compact psla-state-" + described.state);
             if (block.showName) {
-                main.appendChild(el("span", "psla-name", metrics[i].name));
+                row.appendChild(el("span", "psla-name", metrics[i].name));
             }
-            main.appendChild(timeNode(metrics[i], block, model, described));
-            row.appendChild(main);
+            row.appendChild(timeNode(metrics[i], block, model, described));
             var mark = marker(block, described);
             if (mark) {
                 row.appendChild(mark);
@@ -688,23 +693,6 @@
             if (block.showBreachTime && metric.breachTimeMs && !finished(described.state)) {
                 box.appendChild(el("p", "psla-sub", t(model.locale, "breach") + ": " + when(metric.breachTimeMs, model.locale)));
             }
-            body.appendChild(box);
-        }
-    }
-
-    function renderCountdown(body, block, model, metrics) {
-        var i;
-        for (i = 0; i < metrics.length; i++) {
-            var described = describe(metrics[i], block.riskPercent);
-            var box = el("div", "psla-countdown");
-            if (block.showName) {
-                box.appendChild(el("div", "psla-name", metrics[i].name));
-            }
-            var value = timeNode(metrics[i], block, model, described);
-            value.className += " psla-countdown-value";
-            box.appendChild(value);
-            box.appendChild(el("p", "psla-sub", t(model.locale, described.state)));
-            appendBreach(box, block, model, metrics[i]);
             body.appendChild(box);
         }
     }
@@ -814,7 +802,10 @@
             if (block.showName) {
                 box.appendChild(el("div", "psla-name", metrics[i].name));
             }
-            box.appendChild(appendBits(el("p", "psla-sentence"), sentenceBits(metrics[i], asRemaining(block), model, described)));
+            var sentence = appendBits(el("p", "psla-sentence"), sentenceBits(metrics[i], asRemaining(block), model, described));
+            if (sentence.childNodes.length) {
+                box.appendChild(sentence);
+            }
             body.appendChild(box);
         }
     }
@@ -969,16 +960,19 @@
     }
 
     function clockFace(metric, block, model, described) {
-        var ms = described.state === "met" || described.state === "inactive" ? 0 : primaryMs(metric, block.timeMode || "remaining");
+        var paused = described.state === "paused" || described.pause;
+        var ms = described.state === "met" || described.state === "inactive" || paused ? 0 : primaryMs(metric, block.timeMode || "remaining");
         var angles = clockAngles(ms || 0);
         var face = svgEl("svg", {
             "class": "psla-clock-face",
             viewBox: "0 0 120 120",
             "aria-hidden": "true"
         });
-        face.setAttribute("data-psla-clock", String(metric.id));
-        face.setAttribute("data-psla-mode", block.timeMode || "remaining");
-        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "58", fill: clockRim(described.state)}));
+        if (!paused) {
+            face.setAttribute("data-psla-clock", String(metric.id));
+            face.setAttribute("data-psla-mode", block.timeMode || "remaining");
+        }
+        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "58", fill: clockRim(paused ? "paused" : described.state)}));
         face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "46", fill: "#FFFFFF"}));
         var i;
         for (i = 0; i < 12; i++) {
@@ -993,30 +987,35 @@
                 "stroke-linecap": "round"
             }));
         }
-        face.appendChild(svgEl("line", {
-            "class": "psla-hand-hour",
-            x1: "60",
-            y1: "68",
-            x2: "60",
-            y2: "40",
-            stroke: "#172B4D",
-            "stroke-width": "7",
-            "stroke-linecap": "round",
-            transform: "rotate(" + angles.hour + " 60 60)"
-        }));
-        face.appendChild(svgEl("line", {
-            "class": "psla-hand-minute",
-            x1: "60",
-            y1: "70",
-            x2: "60",
-            y2: "26",
-            stroke: "#172B4D",
-            "stroke-width": "5",
-            "stroke-linecap": "round",
-            transform: "rotate(" + angles.minute + " 60 60)"
-        }));
-        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "5.5", fill: "#172B4D"}));
-        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "3", fill: "#0052CC"}));
+        if (paused) {
+            face.appendChild(svgEl("rect", {x: "46", y: "38", width: "8", height: "44", rx: "2.5", fill: "#172B4D"}));
+            face.appendChild(svgEl("rect", {x: "66", y: "38", width: "8", height: "44", rx: "2.5", fill: "#172B4D"}));
+        } else {
+            face.appendChild(svgEl("line", {
+                "class": "psla-hand-hour",
+                x1: "60",
+                y1: "68",
+                x2: "60",
+                y2: "40",
+                stroke: "#172B4D",
+                "stroke-width": "7",
+                "stroke-linecap": "round",
+                transform: "rotate(" + angles.hour + " 60 60)"
+            }));
+            face.appendChild(svgEl("line", {
+                "class": "psla-hand-minute",
+                x1: "60",
+                y1: "70",
+                x2: "60",
+                y2: "26",
+                stroke: "#172B4D",
+                "stroke-width": "5",
+                "stroke-linecap": "round",
+                transform: "rotate(" + angles.minute + " 60 60)"
+            }));
+            face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "5.5", fill: "#172B4D"}));
+            face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "3", fill: "#0052CC"}));
+        }
         return face;
     }
 
@@ -1052,7 +1051,6 @@
             if (block.showName) {
                 copy.appendChild(el("div", "psla-portal-name", metric.name));
             }
-            copy.appendChild(el("div", "psla-clock-state", t(model.locale, described.state)));
             var meta = captionMeta(metric, clockBlock, model, described);
             if (meta) {
                 copy.appendChild(meta);
@@ -1066,8 +1064,11 @@
         if (state === "breached" || state === "missed") {
             return "red";
         }
-        if (state === "at_risk" || state === "paused") {
+        if (state === "at_risk") {
             return "yellow";
+        }
+        if (state === "paused") {
+            return "";
         }
         if (state === "inactive") {
             return "";
@@ -1081,9 +1082,10 @@
         for (i = 0; i < metrics.length; i++) {
             var metric = metrics[i];
             var described = describe(metric, block.riskPercent);
+            var paused = described.state === "paused";
             var lit = trafficLamp(described.state);
             var item = el("div", "psla-traffic-item psla-state-" + described.state);
-            var signal = el("div", "psla-signal");
+            var signal = el("div", "psla-signal" + (paused ? " is-paused" : ""));
             signal.setAttribute("aria-hidden", "true");
             var c;
             for (c = 0; c < colors.length; c++) {
@@ -1095,7 +1097,6 @@
             if (block.showName) {
                 copy.appendChild(el("div", "psla-portal-name", metric.name));
             }
-            copy.appendChild(el("div", "psla-traffic-state", t(model.locale, described.state)));
             var meta = captionMeta(metric, asRemaining(block), model, described);
             if (meta) {
                 meta.className = "psla-traffic-meta";
@@ -1140,7 +1141,6 @@
         compact: renderCompact,
         badges: renderBadges,
         progress: renderProgress,
-        countdown: renderCountdown,
         cards: renderCards,
         timeline: renderTimeline,
         "status-strip": renderStrip,

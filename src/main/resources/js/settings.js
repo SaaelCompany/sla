@@ -58,7 +58,6 @@
                 compact: "Компактный список",
                 badges: "Плашки",
                 progress: "Полоса",
-                countdown: "Крупный остаток",
                 cards: "Подробно",
                 timeline: "История",
                 "status-strip": "В одну строку",
@@ -143,7 +142,6 @@
                 compact: "Compact list",
                 badges: "Badges",
                 progress: "Bar",
-                countdown: "Large remainder",
                 cards: "Details",
                 timeline: "History",
                 "status-strip": "One line",
@@ -180,7 +178,7 @@
         }
     };
 
-    var VARIANT_ORDER = ["plain", "portal", "when", "facts", "clock", "traffic", "compact", "badges", "progress", "countdown", "cards", "timeline", "status-strip"];
+    var VARIANT_ORDER = ["plain", "portal", "when", "facts", "clock", "traffic", "compact", "badges", "progress", "cards", "timeline", "status-strip"];
     var state = {
         layout: null,
         factory: null,
@@ -364,9 +362,9 @@
             showName: variant !== "compact" && variant !== "status-strip",
             showStatus: false,
             showPauseIcon: true,
-            showBreachTime: variant === "cards" || variant === "countdown" || variant === "plain" || variant === "portal" || variant === "when" || variant === "facts" || variant === "clock" || variant === "traffic",
+            showBreachTime: variant === "cards" || variant === "plain" || variant === "portal" || variant === "when" || variant === "facts" || variant === "clock" || variant === "traffic",
             timeMode: "remaining",
-            timeStyle: variant === "plain" ? "spoken" : (variant === "cards" || variant === "countdown" || variant === "timeline" || variant === "portal" || variant === "clock" || variant === "traffic" ? "precise" : "largest"),
+            timeStyle: variant === "plain" ? "spoken" : (variant === "cards" || variant === "timeline" || variant === "portal" || variant === "clock" || variant === "traffic" ? "precise" : "largest"),
             textSource: "portal",
             metricMode: "customer-visible",
             metricIds: [],
@@ -380,7 +378,7 @@
     }
 
     function field(label, control) {
-        var row = el("div", "psla-row");
+        var row = el("div", "psla-field");
         row.appendChild(el("label", null, label));
         row.appendChild(control);
         return row;
@@ -524,7 +522,7 @@
     }
 
     function metricPicker(block) {
-        var box = el("div", "psla-row psla-span");
+        var box = el("div", "psla-field psla-span");
         box.appendChild(el("label", null, tr("metrics")));
         var catalog = state.catalog || [];
         if (!catalog.length) {

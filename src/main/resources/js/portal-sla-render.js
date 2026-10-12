@@ -738,47 +738,62 @@
         list.appendChild(row);
     }
 
-    function ongoingCycleState(metric, block, cycle) {
-        if (cycle.breached) {
-            return "breached";
-        }
-        var state = describe(metric, block.riskPercent).state;
-        if (state === "paused" || state === "at_risk" || state === "running" || state === "breached") {
-            return state;
-        }
-        return "running";
-    }
-
     function renderTimeline(body, block, model, metrics) {
         var i;
-        var c;
         for (i = 0; i < metrics.length; i++) {
             var metric = metrics[i];
-            var box = el("section", "psla-timeline");
-            box.appendChild(el("h3", null, metric.name));
-            var items = metric.cycles || [];
-            if (!items.length) {
-                box.appendChild(el("p", "psla-empty", t(model.locale, "empty")));
-            } else {
-                var list = el("ol");
-                for (c = 0; c < items.length; c++) {
-                    var cycle = items[c];
-                    var state = cycle.ongoing ? ongoingCycleState(metric, block, cycle) : (cycle.breached ? "missed" : "met");
-                    var li = el("li", "is-" + (cycle.breached ? "breached" : "met"));
-                    var title = cycle.ongoing ? t(model.locale, "ongoing") : t(model.locale, "cycle") + " " + (c + 1);
-                    li.appendChild(el("strong", null, title + " · " + t(model.locale, state)));
-                    var detail = formatDuration(cycle.elapsedMs || 0, "precise", model.hoursPerDay, model.daysPerWeek, model.locale);
-                    var range = when(cycle.startTimeMs, model.locale);
-                    if (cycle.stopTimeMs) {
-                        range += " — " + when(cycle.stopTimeMs, model.locale);
-                    }
-                    li.appendChild(el("p", "psla-sub", detail + (range ? " · " + range : "")));
-                    list.appendChild(li);
-                }
-                box.appendChild(list);
+            var described = describe(metric, block.riskPercent);
+            var box = el("section", "psla-timeline psla-state-" + described.state);
+            if (block.showName) {
+                box.appendChild(el("h3", null, metric.name));
             }
+            var clockBlock = asRemaining(block);
+            var start = when(metric.startTimeMs, model.locale);
+            var endMs = finished(described.state) ? metric.stopTimeMs : metric.breachTimeMs;
+            var end = block.showBreachTime === false && !finished(described.state) ? "" : when(endMs, model.locale);
+            if (!start && !end) {
+                box.appendChild(el("p", "psla-empty", t(model.locale, "empty")));
+                body.appendChild(box);
+                continue;
+            }
+            var list = el("ol");
+            if (start) {
+                var opened = el("li", "is-" + described.state);
+                opened.appendChild(el("strong", null, start));
+                opened.appendChild(el("p", "psla-sub", t(model.locale, "elapsed") + " " + formatDuration(metric.elapsedMs || 0, "precise", model.hoursPerDay, model.daysPerWeek, model.locale)));
+                list.appendChild(opened);
+            }
+            if (end) {
+                var closed = el("li", "is-" + described.state);
+                closed.appendChild(el("strong", null, end));
+                var note = timelineNote(metric, clockBlock, model, described);
+                if (note) {
+                    closed.appendChild(note);
+                }
+                list.appendChild(closed);
+            }
+            box.appendChild(list);
             body.appendChild(box);
         }
+    }
+
+    function timelineNote(metric, block, model, described) {
+        var locale = model.locale;
+        var note = el("p", "psla-sub");
+        if (described.state === "paused") {
+            return appendBits(note, [timeNode(metric, block, model, described), t(locale, "pauseMid")]);
+        }
+        if (described.state === "breached") {
+            return appendBits(note, [t(locale, "overHead"), absTimeNode(metric, block, model, described), t(locale, "overTail")]);
+        }
+        if (described.state === "missed") {
+            note.textContent = t(locale, "sentencePassed");
+            return note;
+        }
+        if (described.state === "met" || described.state === "inactive") {
+            return null;
+        }
+        return appendBits(note, [t(locale, "leftHead"), timeNode(metric, block, model, described), t(locale, "leftTail")]);
     }
 
     function renderStrip(body, block, model, metrics) {

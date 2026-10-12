@@ -317,8 +317,8 @@
 }
 
 .psla-timeline {
-    margin: 8px 0 12px;
-    max-width: 640px;
+    margin: 4px 0 8px;
+    max-width: 320px;
 }
 
 .psla-timeline h3 {
@@ -354,8 +354,18 @@
     background: #FF5630;
 }
 
-.psla-timeline li.is-met::before {
+.psla-timeline li.is-met::before,
+.psla-timeline li.is-running::before {
     background: #36B37E;
+}
+
+.psla-timeline li.is-at_risk::before {
+    background: #FFAB00;
+}
+
+.psla-timeline li.is-paused::before,
+.psla-timeline li.is-inactive::before {
+    background: #6B778C;
 }
 
 .psla-status-row {

@@ -570,9 +570,10 @@
 }
 
 .psla-clock-face {
-    width: 48px;
-    height: 48px;
-    flex: 0 0 48px;
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    overflow: visible;
 }
 
 .psla-clock-copy,

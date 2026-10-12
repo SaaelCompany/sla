@@ -6,10 +6,10 @@
         ru: {
             paused: "На паузе",
             running: "В срок",
-            at_risk: "Срок близко",
+            at_risk: "Истекает",
             breached: "Срок прошёл",
             met: "В срок",
-            missed: "Не успели",
+            missed: "Просрочено",
             inactive: "Нет данных",
             empty: "Нет данных по сроку",
             remaining: "Осталось",
@@ -29,7 +29,7 @@
             dueJoin: ". Срок — ",
             endMark: ".",
             sentenceMet: "В срок.",
-            sentenceMissed: "Не уложились в срок.",
+            sentenceMissed: "Просрочено.",
             sentenceNone: "Пока нет данных по этому сроку.",
             subLeft: "осталось ",
             subPause: "на паузе · осталось ",
@@ -968,65 +968,89 @@
         return "#36B37E";
     }
 
+    function round1(value) {
+        return (Math.round(value * 10) / 10).toString();
+    }
+
+    function tickPath(step, inner, outer, skipMajors) {
+        var parts = [];
+        var i;
+        var rad;
+        var cos;
+        var sin;
+        for (i = 0; i < 60; i += step) {
+            if (skipMajors && i % 5 === 0) {
+                continue;
+            }
+            rad = (i * 6 - 90) * Math.PI / 180;
+            cos = Math.cos(rad);
+            sin = Math.sin(rad);
+            parts.push("M" + round1(60 + cos * inner) + " " + round1(60 + sin * inner)
+                + "L" + round1(60 + cos * outer) + " " + round1(60 + sin * outer));
+        }
+        return parts.join("");
+    }
+
+    function vectorHand(className, angle, tip, tail, half) {
+        return svgEl("path", {
+            "class": className,
+            d: "M60 " + (60 - tip)
+                + "L" + (60 + half) + " 60"
+                + "L60 " + (60 + tail)
+                + "L" + (60 - half) + " 60Z",
+            fill: "#172B4D",
+            transform: "rotate(" + angle + " 60 60)"
+        });
+    }
+
     function clockFace(metric, block, model, described) {
         var ms = described.state === "met" || described.state === "inactive" ? 0 : primaryMs(metric, block.timeMode || "remaining");
         var angles = clockAngles(ms || 0);
-        var face = svgEl("svg", {"class": "psla-clock-face", viewBox: "0 0 120 120", "aria-hidden": "true"});
+        var face = svgEl("svg", {
+            "class": "psla-clock-face",
+            viewBox: "0 0 120 120",
+            "aria-hidden": "true"
+        });
         face.setAttribute("data-psla-clock", String(metric.id));
         face.setAttribute("data-psla-mode", block.timeMode || "remaining");
         face.appendChild(svgEl("circle", {
             cx: "60",
             cy: "60",
-            r: "54",
+            r: "56",
             fill: "none",
             stroke: clockRim(described.state),
-            "stroke-width": "3"
+            "stroke-width": "2",
+            "vector-effect": "non-scaling-stroke"
         }));
         face.appendChild(svgEl("circle", {
             cx: "60",
             cy: "60",
-            r: "46",
+            r: "50",
             fill: "#FFFFFF",
             stroke: "#DFE1E6",
-            "stroke-width": "2"
+            "stroke-width": "1",
+            "vector-effect": "non-scaling-stroke"
         }));
-        var i;
-        for (i = 0; i < 12; i++) {
-            face.appendChild(svgEl("line", {
-                x1: "60",
-                y1: "20",
-                x2: "60",
-                y2: i % 3 === 0 ? "30" : "26",
-                transform: "rotate(" + (i * 30) + " 60 60)",
-                stroke: i % 3 === 0 ? "#6B778C" : "#C1C7D0",
-                "stroke-width": i % 3 === 0 ? "3" : "2",
-                "stroke-linecap": "round"
-            }));
-        }
-        face.appendChild(svgEl("line", {
-            "class": "psla-hand-hour",
-            x1: "60",
-            y1: "64",
-            x2: "60",
-            y2: "38",
-            stroke: "#172B4D",
-            "stroke-width": "4",
-            "stroke-linecap": "round",
-            transform: "rotate(" + angles.hour + " 60 60)"
+        face.appendChild(svgEl("path", {
+            d: tickPath(1, 44, 48, true),
+            fill: "none",
+            stroke: "#C1C7D0",
+            "stroke-width": "1",
+            "stroke-linecap": "butt",
+            "vector-effect": "non-scaling-stroke"
         }));
-        face.appendChild(svgEl("line", {
-            "class": "psla-hand-minute",
-            x1: "60",
-            y1: "66",
-            x2: "60",
-            y2: "28",
-            stroke: "#172B4D",
-            "stroke-width": "2.5",
-            "stroke-linecap": "round",
-            transform: "rotate(" + angles.minute + " 60 60)"
+        face.appendChild(svgEl("path", {
+            d: tickPath(5, 38, 48, false),
+            fill: "none",
+            stroke: "#6B778C",
+            "stroke-width": "1.5",
+            "stroke-linecap": "butt",
+            "vector-effect": "non-scaling-stroke"
         }));
-        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "4", fill: "#172B4D"}));
-        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "2", fill: clockRim(described.state)}));
+        face.appendChild(vectorHand("psla-hand-hour", angles.hour, 24, 7, 3.4));
+        face.appendChild(vectorHand("psla-hand-minute", angles.minute, 36, 8, 2));
+        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "3.2", fill: "#172B4D"}));
+        face.appendChild(svgEl("circle", {cx: "60", cy: "60", r: "1.4", fill: clockRim(described.state)}));
         return face;
     }
 

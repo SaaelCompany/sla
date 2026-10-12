@@ -34,7 +34,7 @@
             timeStyle: "Формат времени",
             textSource: "Откуда текст",
             metricMode: "Какие SLA",
-            risk: "Порог «срок близко», %",
+            risk: "Порог «истекает», %",
             refresh: "Обновление, секунды",
             hideEmpty: "Скрывать, если SLA нет",
             metrics: "Метрики",
@@ -76,7 +76,7 @@
             presets: {
                 paused: "На паузе",
                 running: "В срок",
-                risk: "Срок близко",
+                risk: "Истекает",
                 breached: "Срок прошёл",
                 done: "Уложились"
             },
@@ -474,69 +474,71 @@
         tools.appendChild(remove);
         head.appendChild(tools);
         card.appendChild(head);
-        card.appendChild(field(tr("variant"), selectBox(block.variant, variantOptions(), function (value) {
+        var fields = el("div", "psla-fields");
+        fields.appendChild(field(tr("variant"), selectBox(block.variant, variantOptions(), function (value) {
             block.variant = value;
             touch();
         })));
-        card.appendChild(field(tr("name"), textBox(block.title, function (value) {
+        fields.appendChild(field(tr("name"), textBox(block.title, function (value) {
             block.title = value;
             touch();
         })));
-        card.appendChild(checkBox(block.collapsed, tr("collapsed"), function (value) {
+        var checks = el("div", "psla-checks");
+        checks.appendChild(checkBox(block.collapsed, tr("collapsed"), function (value) {
             block.collapsed = value;
             touch();
         }));
-        card.appendChild(checkBox(block.showName, tr("showName"), function (value) {
+        checks.appendChild(checkBox(block.showName, tr("showName"), function (value) {
             block.showName = value;
             touch();
         }));
-        card.appendChild(checkBox(block.showPauseIcon, tr("pause"), function (value) {
+        checks.appendChild(checkBox(block.showPauseIcon, tr("pause"), function (value) {
             block.showPauseIcon = value;
             touch();
         }));
-        card.appendChild(checkBox(block.showBreachTime, tr("breach"), function (value) {
+        checks.appendChild(checkBox(block.showBreachTime, tr("breach"), function (value) {
             block.showBreachTime = value;
             touch();
         }));
-        card.appendChild(checkBox(block.hideWhenEmpty, tr("hideEmpty"), function (value) {
+        checks.appendChild(checkBox(block.hideWhenEmpty, tr("hideEmpty"), function (value) {
             block.hideWhenEmpty = value;
             touch();
         }));
-        card.appendChild(field(tr("timeMode"), selectBox(block.timeMode, tr("modes"), function (value) {
+        fields.appendChild(checks);
+        fields.appendChild(field(tr("timeMode"), selectBox(block.timeMode, tr("modes"), function (value) {
             block.timeMode = value;
             touch();
         })));
-        card.appendChild(field(tr("timeStyle"), selectBox(block.timeStyle, tr("styles"), function (value) {
+        fields.appendChild(field(tr("timeStyle"), selectBox(block.timeStyle, tr("styles"), function (value) {
             block.timeStyle = value;
             touch();
         })));
-        card.appendChild(field(tr("textSource"), selectBox(block.textSource, tr("sources"), function (value) {
+        fields.appendChild(field(tr("textSource"), selectBox(block.textSource, tr("sources"), function (value) {
             block.textSource = value;
             touch();
         })));
-        card.appendChild(field(tr("metricMode"), selectBox(block.metricMode, tr("metricModes"), function (value) {
+        fields.appendChild(field(tr("metricMode"), selectBox(block.metricMode, tr("metricModes"), function (value) {
             block.metricMode = value;
             touch();
             renderBlocks();
         })));
         if (block.metricMode === "selected") {
-            card.appendChild(metricPicker(block));
+            fields.appendChild(metricPicker(block));
         }
-        var split = el("div", "psla-split");
-        split.appendChild(field(tr("risk"), numberBox(block.riskPercent, 1, 90, function (value) {
+        fields.appendChild(field(tr("risk"), numberBox(block.riskPercent, 1, 90, function (value) {
             block.riskPercent = value;
             touch();
         })));
-        split.appendChild(field(tr("refresh"), numberBox(block.refreshSeconds, 15, 600, function (value) {
+        fields.appendChild(field(tr("refresh"), numberBox(block.refreshSeconds, 15, 600, function (value) {
             block.refreshSeconds = value;
             touch();
         })));
-        card.appendChild(split);
+        card.appendChild(fields);
         return card;
     }
 
     function metricPicker(block) {
-        var box = el("div", "psla-row");
+        var box = el("div", "psla-row psla-span");
         box.appendChild(el("label", null, tr("metrics")));
         var catalog = state.catalog || [];
         if (!catalog.length) {

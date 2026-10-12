@@ -4,13 +4,9 @@ import com.atlassian.jira.config.properties.APKeys;
 import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueManager;
-import com.atlassian.jira.permission.GlobalPermissionKey;
-import com.atlassian.jira.permission.ProjectPermissions;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
-import com.atlassian.jira.security.GlobalPermissionManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
-import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.servicedesk.api.ServiceDesk;
@@ -30,16 +26,12 @@ import com.atlassian.servicedesk.api.util.paging.SimplePagedRequest;
 import com.portalsla.PortalSlaException;
 import com.portalsla.dto.PortalDtos.BulkKeys;
 import com.portalsla.dto.PortalDtos.BulkView;
-import com.portalsla.dto.PortalDtos.CatalogMetric;
-import com.portalsla.dto.PortalDtos.ConfigView;
 import com.portalsla.dto.PortalDtos.CycleView;
 import com.portalsla.dto.PortalDtos.JiraTexts;
 import com.portalsla.dto.PortalDtos.MetricView;
 import com.portalsla.dto.PortalDtos.PortalView;
-import com.portalsla.dto.PortalDtos.ProjectItem;
 import com.portalsla.dto.PortalDtos.StatusView;
 import com.portalsla.layout.LayoutCodec;
-import com.portalsla.layout.LayoutSanitizer;
 import com.portalsla.layout.PortalSlaLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +56,6 @@ import java.util.regex.Pattern;
 public class PortalSlaService {
 
     private static final Logger log = LoggerFactory.getLogger(PortalSlaService.class);
-    private static final Pattern PROJECT_KEY = Pattern.compile("^[A-Za-z][A-Za-z0-9]{1,31}$");
     private static final Pattern ISSUE_KEY = Pattern.compile("^[A-Z][A-Z0-9]+-\\d+$");
 
     private final LayoutStore layoutStore;
@@ -72,8 +63,6 @@ public class PortalSlaService {
     private final ApplicationProperties applicationProperties;
     private final IssueManager issueManager;
     private final ProjectManager projectManager;
-    private final PermissionManager permissionManager;
-    private final GlobalPermissionManager globalPermissionManager;
     private final ServiceDeskService serviceDeskService;
     private final ServiceDeskCustomerRequestService customerRequestService;
     private final SlaInformationService slaInformationService;
@@ -85,8 +74,6 @@ public class PortalSlaService {
                             @ComponentImport ApplicationProperties applicationProperties,
                             @ComponentImport IssueManager issueManager,
                             @ComponentImport ProjectManager projectManager,
-                            @ComponentImport PermissionManager permissionManager,
-                            @ComponentImport GlobalPermissionManager globalPermissionManager,
                             @ComponentImport ServiceDeskService serviceDeskService,
                             @ComponentImport ServiceDeskCustomerRequestService customerRequestService,
                             @ComponentImport SlaInformationService slaInformationService,
@@ -96,8 +83,6 @@ public class PortalSlaService {
         this.applicationProperties = applicationProperties;
         this.issueManager = issueManager;
         this.projectManager = projectManager;
-        this.permissionManager = permissionManager;
-        this.globalPermissionManager = globalPermissionManager;
         this.serviceDeskService = serviceDeskService;
         this.customerRequestService = customerRequestService;
         this.slaInformationService = slaInformationService;
@@ -145,108 +130,9 @@ public class PortalSlaService {
         return LayoutCodec.write(bulk);
     }
 
-    public String configJson(ApplicationUser user, String projectKey) {
-        Project project = requireServiceProjectAdmin(user, projectKey);
-        LayoutStore.Stored stored = layoutStore.load(project.getId().longValue());
-        ConfigView view = new ConfigView();
-        view.projectKey = project.getKey();
-        view.projectName = project.getName();
-        view.jiraHoursPerDay = trackingHours();
-        view.jiraDaysPerWeek = trackingDays();
-        if (stored.corrupt) {
-            view.layout = layoutStore.defaults();
-            view.warning = "corrupt";
-        } else if (stored.layout == null) {
-            view.layout = layoutStore.defaults();
-        } else {
-            view.layout = stored.layout;
-        }
-        List<CatalogMetric> catalog = catalog(user, project);
-        if (catalog == null) {
-            view.catalog = new ArrayList<CatalogMetric>();
-            if (view.warning == null) {
-                view.warning = "metrics-unavailable";
-            }
-        } else {
-            view.catalog = catalog;
-        }
-        return LayoutCodec.write(view);
-    }
-
-    public void save(ApplicationUser user, String projectKey, String json) {
-        Project project = requireServiceProjectAdmin(user, projectKey);
-        PortalSlaLayout parsed;
-        try {
-            parsed = LayoutCodec.parse(json);
-        } catch (RuntimeException ex) {
-            throw new PortalSlaException(400, "invalid-json");
-        }
-        LayoutSanitizer.Result result = LayoutSanitizer.sanitize(parsed);
-        if (!result.ok()) {
-            throw new PortalSlaException(400, "invalid-layout", result.errors);
-        }
-        layoutStore.save(project.getId().longValue(), result.layout);
-    }
-
-    public String previewJson(ApplicationUser user, String projectKey, String issueKey) {
-        Project project = requireServiceProjectAdmin(user, projectKey);
-        Issue issue = requireIssueInProject(issueKey, project);
-        return LayoutCodec.write(buildView(user, issue, null, null));
-    }
-
-    public List<ProjectItem> listProjects(ApplicationUser user) {
-        List<ProjectItem> items = new ArrayList<ProjectItem>();
-        if (user == null) {
-            return items;
-        }
-        int start = 0;
-        while (start < 500) {
-            PagedResponse<ServiceDesk> page;
-            try {
-                page = serviceDeskService.getServiceDesks(user, false, SimplePagedRequest.paged(start, 50));
-            } catch (RuntimeException ex) {
-                log.warn("Cannot list service projects", ex);
-                break;
-            }
-            if (page == null || page.getResults() == null || page.getResults().isEmpty()) {
-                break;
-            }
-            for (int i = 0; i < page.getResults().size(); i++) {
-                ServiceDesk desk = page.getResults().get(i);
-                Project project = projectManager.getProjectObj(Long.valueOf(desk.getProjectId()));
-                if (project == null || !isProjectAdmin(user, project)) {
-                    continue;
-                }
-                ProjectItem item = new ProjectItem();
-                item.key = project.getKey();
-                item.name = project.getName();
-                items.add(item);
-            }
-            if (!page.hasNextPage()) {
-                break;
-            }
-            int size = page.getResults().size();
-            if (size <= 0) {
-                break;
-            }
-            start += size;
-        }
-        return items;
-    }
-
-    public Project requireEditorProject(ApplicationUser user, String projectKey) {
-        return requireServiceProjectAdmin(user, projectKey);
-    }
-
     private PortalView buildView(ApplicationUser user, Issue issue, CustomerRequest request, String onlyZone) {
         Project project = projectManager.getProjectObj(issue.getProjectId());
-        LayoutStore.Stored stored = project == null
-                ? LayoutStore.Stored.missing()
-                : layoutStore.load(project.getId().longValue());
-        PortalSlaLayout layout = stored.layout;
-        if (layout == null && !stored.corrupt) {
-            layout = layoutStore.defaults();
-        }
+        PortalSlaLayout layout = fixedLayout();
         PortalView view = new PortalView();
         view.issueKey = issue.getKey();
         view.locale = localeTag();
@@ -271,6 +157,20 @@ public class PortalSlaService {
             view.metrics = loadMetrics(user, project, issue, effective);
         }
         return view;
+    }
+
+    private PortalSlaLayout fixedLayout() {
+        PortalSlaLayout layout = layoutStore.defaults();
+        layout.enabled = Boolean.TRUE;
+        if (layout.blocks != null) {
+            for (int i = 0; i < layout.blocks.size(); i++) {
+                PortalSlaLayout.Block block = layout.blocks.get(i);
+                if (block != null) {
+                    block.zone = "sidebar-bottom";
+                }
+            }
+        }
+        return layout;
     }
 
     private PortalSlaLayout filterZone(PortalSlaLayout layout, String zone) {
@@ -536,32 +436,6 @@ public class PortalSlaService {
         }
     }
 
-    private List<CatalogMetric> catalog(ApplicationUser user, Project project) {
-        try {
-            ServiceDesk desk = serviceDeskService.getServiceDeskForProject(user, project);
-            Collection<TimeMetric> metrics = timeMetricService.getTimeMetrics(user, desk);
-            List<CatalogMetric> catalog = new ArrayList<CatalogMetric>();
-            if (metrics == null) {
-                return catalog;
-            }
-            for (TimeMetric metric : metrics) {
-                if (metric == null || metric.getId() == null) {
-                    continue;
-                }
-                CatalogMetric item = new CatalogMetric();
-                item.id = metric.getId().intValue();
-                item.name = metric.getName() == null ? ("SLA #" + metric.getId()) : metric.getName();
-                item.customerVisible = metric.isCustomerVisible();
-                catalog.add(item);
-            }
-            return catalog;
-        } catch (RuntimeException ex) {
-            log.warn("Cannot read SLA metrics for project {}", project.getKey());
-            log.debug("SLA metric catalogue failed", ex);
-            return null;
-        }
-    }
-
     private StatusView statusOf(ApplicationUser user, Issue issue, CustomerRequest request) {
         StatusView status = new StatusView();
         status.name = "";
@@ -610,47 +484,6 @@ public class PortalSlaService {
         } catch (ServiceDeskServiceException ex) {
             throw new PortalSlaException(404, "not-found");
         }
-    }
-
-    private Issue requireIssueInProject(String issueKey, Project project) {
-        if (issueKey == null || !ISSUE_KEY.matcher(issueKey.toUpperCase(Locale.US)).matches()) {
-            throw new PortalSlaException(404, "not-found");
-        }
-        Issue issue = issueManager.getIssueByCurrentKey(issueKey.toUpperCase(Locale.US));
-        if (issue == null || issue.getProjectId() == null
-                || issue.getProjectId().longValue() != project.getId().longValue()) {
-            throw new PortalSlaException(404, "not-found");
-        }
-        return issue;
-    }
-
-    private Project requireServiceProjectAdmin(ApplicationUser user, String projectKey) {
-        if (user == null) {
-            throw new PortalSlaException(401, "auth");
-        }
-        if (projectKey == null || !PROJECT_KEY.matcher(projectKey).matches()) {
-            throw new PortalSlaException(404, "not-found");
-        }
-        Project project = projectManager.getProjectByCurrentKey(projectKey);
-        if (project == null || project.getId() == null) {
-            throw new PortalSlaException(404, "not-found");
-        }
-        if (!isProjectAdmin(user, project)) {
-            throw new PortalSlaException(403, "forbidden");
-        }
-        try {
-            serviceDeskService.getServiceDeskForProject(user, project);
-        } catch (ServiceDeskServiceException ex) {
-            throw new PortalSlaException(404, "not-service-desk");
-        }
-        return project;
-    }
-
-    private boolean isProjectAdmin(ApplicationUser user, Project project) {
-        if (permissionManager.hasPermission(ProjectPermissions.ADMINISTER_PROJECTS, project, user)) {
-            return true;
-        }
-        return globalPermissionManager.hasPermission(GlobalPermissionKey.ADMINISTER, user);
     }
 
     private int minRefresh(List<PortalSlaLayout.Block> blocks) {

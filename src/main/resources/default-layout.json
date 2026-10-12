@@ -6,8 +6,8 @@
   "blocks": [
     {
       "id": "sla-main",
-      "variant": "plain",
-      "zone": "sidebar-top",
+      "variant": "portal",
+      "zone": "sidebar-bottom",
       "title": "SLA",
       "collapsed": false,
       "showName": true,
@@ -15,7 +15,7 @@
       "showPauseIcon": true,
       "showBreachTime": true,
       "timeMode": "remaining",
-      "timeStyle": "spoken",
+      "timeStyle": "precise",
       "textSource": "portal",
       "metricMode": "customer-visible",
       "metricIds": [],

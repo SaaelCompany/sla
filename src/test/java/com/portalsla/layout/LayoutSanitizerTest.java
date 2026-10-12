@@ -31,15 +31,15 @@ public class LayoutSanitizerTest {
         assertTrue(result.layout.enabled.booleanValue());
         assertEquals(1, result.layout.blocks.size());
         PortalSlaLayout.Block block = result.layout.blocks.get(0);
-        assertEquals("plain", block.variant);
-        assertEquals("sidebar-top", block.zone);
+        assertEquals("portal", block.variant);
+        assertEquals("sidebar-bottom", block.zone);
         assertEquals("SLA", block.title);
         assertTrue(block.showName.booleanValue());
         assertFalse(block.showStatus.booleanValue());
         assertTrue(block.showPauseIcon.booleanValue());
         assertTrue(block.showBreachTime.booleanValue());
         assertEquals("remaining", block.timeMode);
-        assertEquals("spoken", block.timeStyle);
+        assertEquals("precise", block.timeStyle);
         assertEquals("customer-visible", block.metricMode);
     }
 

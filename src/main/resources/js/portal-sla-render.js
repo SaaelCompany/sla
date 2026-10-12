@@ -1,4 +1,4 @@
-/* Shared SLA renderer. The portal and the layout editor both call PortalSlaRender. */
+/* Customer-portal SLA renderer. */
 (function (window) {
     "use strict";
 
@@ -8,7 +8,7 @@
             running: "В срок",
             at_risk: "Срок близко",
             breached: "Срок прошёл",
-            met: "Успели",
+            met: "В срок",
             missed: "Не успели",
             inactive: "Нет данных",
             empty: "Нет данных по сроку",
@@ -28,7 +28,7 @@
             overTail: " назад.",
             dueJoin: ". Срок — ",
             endMark: ".",
-            sentenceMet: "Успели вовремя.",
+            sentenceMet: "В срок.",
             sentenceMissed: "Не уложились в срок.",
             sentenceNone: "Пока нет данных по этому сроку.",
             subLeft: "осталось ",
@@ -42,7 +42,7 @@
             running: "On time",
             at_risk: "Due soon",
             breached: "Overdue",
-            met: "Finished",
+            met: "On time",
             missed: "Missed",
             inactive: "No data",
             empty: "No SLA data",
@@ -62,7 +62,7 @@
             overTail: ".",
             dueJoin: ". Due ",
             endMark: ".",
-            sentenceMet: "Finished on time.",
+            sentenceMet: "On time.",
             sentenceMissed: "Missed the due time.",
             sentenceNone: "There is no due time yet.",
             subLeft: "",

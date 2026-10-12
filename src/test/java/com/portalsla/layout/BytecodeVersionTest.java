@@ -27,9 +27,7 @@ public class BytecodeVersionTest {
         String components = read("target/classes/META-INF/plugin-components/component");
         assertTrue(components, components.contains("com.portalsla.service.LayoutStore"));
         assertTrue(components, components.contains("com.portalsla.service.PortalSlaService"));
-        assertTrue(components, components.contains("com.portalsla.servlet.EditorServlet"));
         assertTrue(components, components.contains("com.portalsla.rest.PortalResource"));
-        assertTrue(components, components.contains("com.portalsla.rest.ConfigResource"));
         String spring = read("target/classes/META-INF/spring/plugin-context.xml");
         assertTrue(spring, spring.contains("atlassian-scanner:scan-indexes"));
         assertTrue(spring, spring.contains("http://www.atlassian.com/schema/atlassian-scanner/2"));

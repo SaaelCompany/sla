@@ -30,15 +30,16 @@
             advanced: "День, неделя и свои селекторы",
             day: "Часов в рабочем дне (0 — как в Jira)",
             week: "Дней в неделе (0 — как в Jira)",
-            dayHint: "1 день на портале равен этому числу часов. Для календаря 24/7 поставьте 24. Сейчас в Jira: ",
+            dayHint: "1 день на портале равен этому числу часов. Для календаря 24/7 поставьте 24. В настройках Jira: ",
             selectors: "Если портал размечен иначе, впишите CSS-селектор — по одному в строке. Пустое поле оставляет стандартные.",
-            defaults: "Сейчас ищем: ",
+            defaults: "Ищем по умолчанию: ",
+            simpleTitle: "Понятные",
+            moreTitle: "Ещё",
             none: "Пока ничего не выбрано",
             name: "Заголовок",
             zone: "Место",
             collapsed: "Свёрнут по умолчанию",
             showName: "Имена метрик",
-            showStatus: "Статус заявки",
             pause: "Значок паузы",
             breach: "Дата нарушения",
             timeMode: "Какое время показывать",
@@ -73,16 +74,20 @@
                 custom: "Свой селектор"
             },
             variants: {
-                compact: ["Компактный список", "Как на портале: «1 д.» и значок паузы"],
-                badges: ["Плашки", "Цветные статусы SLA"],
-                progress: ["Прогресс", "Полоса прошедшего времени"],
-                countdown: ["Обратный отсчёт", "Крупный остаток"],
-                cards: ["Карточки", "Цель, прошло, осталось, срок"],
-                timeline: ["Хронология", "Текущий и закрытые циклы"],
-                "status-strip": ["Строка статуса", "Статус заявки и SLA в одну линию"]
+                plain: ["Одной фразой", "«Осталось 1 день. Срок — 13 октября»"],
+                portal: ["Как в портале", "Точка и дата, как панель SLA в Jira"],
+                when: ["Дата срока", "Крупная дата и сколько осталось"],
+                facts: ["Осталось и срок", "Две строки, без лишних полей"],
+                compact: ["Компактный список", "Только время и значок паузы"],
+                badges: ["Плашки", "Цвет: в срок, на паузе, срок прошёл"],
+                progress: ["Полоса", "Сколько времени уже прошло"],
+                countdown: ["Крупный остаток", "Большие цифры оставшегося времени"],
+                cards: ["Подробно", "Осталось, прошло, цель и дата"],
+                timeline: ["История", "Как срок шёл по шагам"],
+                "status-strip": ["В одну строку", "Имя, время и состояние в линию"]
             },
             modes: {remaining: "Осталось", elapsed: "Прошло", goal: "Цель"},
-            styles: {largest: "Крупная единица (1 д.)", precise: "Две единицы (1 д. 2 ч.)"},
+            styles: {spoken: "Словами (1 день 2 часа)", largest: "Крупная единица (1 д.)", precise: "Две единицы (1 д. 2 ч.)"},
             sources: {portal: "Стиль портала", jira: "Формат Jira"},
             metricModes: {
                 "customer-visible": "Только отмеченные «на портале»",
@@ -98,10 +103,25 @@
                 done: "Завершено"
             },
             sampleTitle: "Не работает принтер на 3 этаже",
-            sampleStatus: "В ожидании поддержки",
+            sampleStatus: "Открыть",
+            helpCenter: "Центр поддержки",
+            commentPlaceholder: "Прокомментировать запрос...",
+            details: "Подробности",
+            detailsWhen: "Вчера 3:00 PM",
+            description: "Описание",
+            descriptionBody: "Принтер в кабинете 312 не печатает. На панели горит красный индикатор.",
+            fieldUser: "Пользователь",
+            fieldUserValue: "Иванов Иван",
+            fieldPc: "Компьютер",
+            fieldPcValue: "DESKTOP-OFFICE",
+            notify: "Не уведомляйте меня",
+            share: "Общий доступ",
+            assigneeLabel: "Передано",
+            reporterLabel: "Инициатор",
+            reporterName: "Иванов",
+            powered: "Работает на базе",
             navHelp: "Порталы",
             navRequests: "Заявки",
-            description: "Описание заявки",
             activity: "Переписка",
             people: "Участники",
             fields: "Поля заявки",
@@ -143,15 +163,16 @@
             advanced: "Day length and custom selectors",
             day: "Hours in a working day (0 = Jira setting)",
             week: "Days in a week (0 = Jira setting)",
-            dayHint: "One displayed day equals this many hours. Use 24 for a 24/7 calendar. Jira currently uses ",
+            dayHint: "One displayed day equals this many hours. Use 24 for a 24/7 calendar. Jira is set to ",
             selectors: "If the portal markup differs, add one CSS selector per line. Leave blank to keep the defaults.",
-            defaults: "Currently matching: ",
+            defaults: "Default match: ",
+            simpleTitle: "Easy to read",
+            moreTitle: "More",
             none: "Nothing selected yet",
             name: "Title",
             zone: "Placement",
             collapsed: "Collapsed by default",
             showName: "Metric names",
-            showStatus: "Request status",
             pause: "Pause icon",
             breach: "Breach date",
             timeMode: "Which time to show",
@@ -186,16 +207,20 @@
                 custom: "Custom selector"
             },
             variants: {
-                compact: ["Compact list", "Portal style: “1d” and a pause icon"],
-                badges: ["Badges", "Coloured SLA statuses"],
-                progress: ["Progress", "Elapsed-time bar"],
-                countdown: ["Countdown", "Large remaining time"],
-                cards: ["Cards", "Goal, elapsed, remaining, due"],
-                timeline: ["Timeline", "Current and completed cycles"],
-                "status-strip": ["Status strip", "Request status and SLA on one line"]
+                plain: ["One sentence", "“1 day left. Due 13 October”"],
+                portal: ["Portal panel", "A dot and a date, like the Jira SLA panel"],
+                when: ["Due date", "A large date and how much time is left"],
+                facts: ["Left and due", "Two lines, nothing extra"],
+                compact: ["Compact list", "Just the time and a pause icon"],
+                badges: ["Badges", "Colour: on time, paused, overdue"],
+                progress: ["Bar", "How much of the time has passed"],
+                countdown: ["Large remainder", "Big digits for the time left"],
+                cards: ["Details", "Remaining, elapsed, goal and the date"],
+                timeline: ["History", "How the clock moved, step by step"],
+                "status-strip": ["One line", "Name, time and state on one line"]
             },
             modes: {remaining: "Remaining", elapsed: "Elapsed", goal: "Goal"},
-            styles: {largest: "Largest unit (1d)", precise: "Two units (1d 2h)"},
+            styles: {spoken: "Words (1 day 2 hours)", largest: "Largest unit (1d)", precise: "Two units (1d 2h)"},
             sources: {portal: "Portal style", jira: "Jira format"},
             metricModes: {
                 "customer-visible": "Only “show on portal”",
@@ -211,10 +236,25 @@
                 done: "Completed"
             },
             sampleTitle: "Printer on floor 3 is down",
-            sampleStatus: "Waiting for support",
+            sampleStatus: "Open",
+            helpCenter: "Help Center",
+            commentPlaceholder: "Comment on this request...",
+            details: "Details",
+            detailsWhen: "Yesterday 3:00 PM",
+            description: "Description",
+            descriptionBody: "The printer in room 312 does not print. The panel shows a red light.",
+            fieldUser: "User",
+            fieldUserValue: "Ann Smith",
+            fieldPc: "Computer",
+            fieldPcValue: "DESKTOP-OFFICE",
+            notify: "Don't notify me",
+            share: "Share",
+            assigneeLabel: "Assignee",
+            reporterLabel: "Reporter",
+            reporterName: "Ann",
+            powered: "Powered by",
             navHelp: "Portals",
             navRequests: "Requests",
-            description: "Request description",
             activity: "Conversation",
             people: "Participants",
             fields: "Request fields",
@@ -236,7 +276,9 @@
         }
     };
 
-    var VARIANT_ORDER = ["compact", "badges", "progress", "countdown", "cards", "timeline", "status-strip"];
+    var SIMPLE_VARIANTS = ["plain", "portal", "when", "facts"];
+    var MORE_VARIANTS = ["compact", "badges", "progress", "countdown", "cards", "timeline", "status-strip"];
+    var VARIANT_ORDER = SIMPLE_VARIANTS.concat(MORE_VARIANTS);
     var ZONE_ORDER = ["header", "under-title", "beside-status", "above-description", "above-activity", "sidebar-top", "sidebar-bottom", "portal-panel", "request-footer", "my-requests", "custom"];
 
     var state = {
@@ -315,7 +357,7 @@
     function sampleCatalog() {
         var ru = lang() === "ru";
         return [
-            {id: 1, name: ru ? "Время до первого ответа" : "Time to first response", customerVisible: true},
+            {id: 1, name: ru ? "Время до первого отклика" : "Time to first response", customerVisible: true},
             {id: 2, name: ru ? "Время до решения" : "Time to resolution", customerVisible: true}
         ];
     }
@@ -360,7 +402,7 @@
     }
 
     function presetMetrics(preset) {
-        var first = named(0, lang() === "ru" ? "Время до первого ответа" : "Time to first response");
+        var first = named(0, lang() === "ru" ? "Время до первого отклика" : "Time to first response");
         var second = named(1, lang() === "ru" ? "Время до решения" : "Time to resolution");
         if (preset === "running") {
             return [
@@ -416,11 +458,11 @@
             title: "SLA",
             collapsed: false,
             showName: variant !== "compact" && variant !== "status-strip",
-            showStatus: variant === "status-strip",
+            showStatus: false,
             showPauseIcon: true,
-            showBreachTime: variant === "cards" || variant === "countdown",
+            showBreachTime: variant === "cards" || variant === "countdown" || variant === "plain" || variant === "portal" || variant === "when" || variant === "facts",
             timeMode: "remaining",
-            timeStyle: variant === "cards" || variant === "countdown" || variant === "timeline" ? "precise" : "largest",
+            timeStyle: variant === "plain" ? "spoken" : (variant === "cards" || variant === "countdown" || variant === "timeline" || variant === "portal" ? "precise" : "largest"),
             textSource: "portal",
             metricMode: "customer-visible",
             metricIds: [],
@@ -560,8 +602,15 @@
         var root = document.getElementById("psla-palette");
         root.innerHTML = "";
         root.appendChild(el("h2", null, tr("variantsTitle")));
+        addVariantGroup(root, tr("simpleTitle"), SIMPLE_VARIANTS);
+        addVariantGroup(root, tr("moreTitle"), MORE_VARIANTS);
+        root.appendChild(el("p", "psla-hint", tr("preview")));
+    }
+
+    function addVariantGroup(root, title, ids) {
+        root.appendChild(el("h2", "psla-group-label", title));
         var i;
-        for (i = 0; i < VARIANT_ORDER.length; i++) {
+        for (i = 0; i < ids.length; i++) {
             (function (variant) {
                 var meta = UI[lang()].variants[variant];
                 var button = el("button", "psla-variant" + (state.armed === variant ? " is-armed" : ""));
@@ -579,9 +628,8 @@
                     renderCanvas();
                 });
                 root.appendChild(button);
-            })(VARIANT_ORDER[i]);
+            })(ids[i]);
         }
-        root.appendChild(el("p", "psla-hint", tr("preview")));
     }
 
     function zoneBox(id) {
@@ -648,6 +696,35 @@
         return wrap;
     }
 
+    function miniIcon(name) {
+        var span = el("span", "psla-mini");
+        span.setAttribute("aria-hidden", "true");
+        if (name === "clip") {
+            span.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6.2 8.8l4.2-4.2a2 2 0 0 1 2.8 2.8l-5.4 5.4a3.2 3.2 0 0 1-4.5-4.5l5.2-5.2" stroke-linecap="round"></path></svg>';
+        } else if (name === "bell") {
+            span.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 7.2a4 4 0 0 1 8 0c0 2.2.6 3 1.1 3.6H2.9C3.4 10.2 4 9.4 4 7.2z"></path><path d="M6.5 12.2a1.5 1.5 0 0 0 3 0" stroke-linecap="round"></path></svg>';
+        } else if (name === "share") {
+            span.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="4" cy="8" r="1.4"></circle><circle cx="12" cy="4.2" r="1.4"></circle><circle cx="12" cy="11.8" r="1.4"></circle><path d="M5.3 7.3l5.3-2.4M5.3 8.7l5.3 2.4"></path></svg>';
+        } else {
+            span.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#FFAB00" stroke-width="1.6"><path d="M9 18h6M10 21h4" stroke-linecap="round"></path><path d="M12 3a6 6 0 0 0-3.2 11c.4.4.7.9.8 1.5h4.8c.1-.6.4-1.1.8-1.5A6 6 0 0 0 12 3z"></path></svg>';
+        }
+        return span;
+    }
+
+    function personRow(letter, name) {
+        var row = el("div", "psla-person");
+        row.appendChild(el("span", "psla-avatar is-small", letter));
+        row.appendChild(el("span", null, name));
+        return row;
+    }
+
+    function detailField(label, value) {
+        var box = el("div", "psla-detail-block");
+        box.appendChild(el("div", "psla-field-label", label));
+        box.appendChild(el("div", "psla-field-value", value));
+        return box;
+    }
+
     function renderCanvas() {
         var canvas = document.getElementById("psla-canvas");
         canvas.innerHTML = "";
@@ -655,46 +732,74 @@
             canvas.appendChild(el("div", "psla-hidden-ribbon", tr("hidden")));
         }
         var frame = el("div", "psla-portal-frame");
-        var browser = el("div", "psla-browser-top");
-        browser.appendChild(el("i"));
-        browser.appendChild(el("i"));
-        browser.appendChild(el("i"));
-        browser.appendChild(el("div", "psla-url", "/servicedesk/customer/portal/1/SD-42"));
-        frame.appendChild(browser);
-        var nav = el("div", "psla-portal-nav");
-        nav.appendChild(el("strong", null, state.projectName || "Service Desk"));
-        var links = el("span");
-        links.textContent = tr("navHelp") + "  ·  " + tr("navRequests");
-        nav.appendChild(links);
-        frame.appendChild(nav);
+        var key = state.projectKey || "SD";
+        var crumb = el("div", "psla-crumb");
+        var bulb = miniIcon("bulb");
+        bulb.className = "psla-bulb";
+        crumb.appendChild(bulb);
+        var trail = el("div", "psla-trail");
+        trail.appendChild(el("span", "psla-link", tr("helpCenter")));
+        trail.appendChild(el("span", "psla-sep", "/"));
+        trail.appendChild(el("span", "psla-link", state.projectName || key));
+        trail.appendChild(el("span", "psla-sep", "/"));
+        trail.appendChild(el("span", "psla-link", key + "-42"));
+        crumb.appendChild(trail);
+        frame.appendChild(crumb);
         frame.appendChild(zoneBox("header"));
 
         var request = el("article", "psla-request");
+        request.appendChild(el("h1", "psla-req-title", tr("sampleTitle")));
         request.appendChild(zoneBox("under-title"));
-        request.appendChild(el("div", "psla-req-key", "SD-42"));
-        request.appendChild(el("h2", null, tr("sampleTitle")));
-        var statusLine = el("div", "psla-status-line");
-        statusLine.appendChild(el("span", "psla-lozenge psla-cat-indeterminate", tr("sampleStatus")));
-        statusLine.appendChild(zoneBox("beside-status"));
-        request.appendChild(statusLine);
+
+        var comment = el("div", "psla-comment");
+        comment.appendChild(el("span", "psla-avatar", lang() === "ru" ? "И" : "A"));
+        var field = el("div", "psla-comment-field");
+        field.appendChild(el("span", null, tr("commentPlaceholder")));
+        field.appendChild(miniIcon("clip"));
+        comment.appendChild(field);
+        request.appendChild(comment);
 
         var grid = el("div", "psla-request-grid");
-        var main = el("div");
+        var main = el("div", "psla-main");
+        var detailsHead = el("div", "psla-details-head");
+        detailsHead.appendChild(el("strong", null, tr("details")));
+        detailsHead.appendChild(el("span", null, tr("detailsWhen")));
+        main.appendChild(detailsHead);
         main.appendChild(zoneBox("above-description"));
-        main.appendChild(el("div", "psla-fake-text", tr("description")));
+        main.appendChild(detailField(tr("description"), tr("descriptionBody")));
+        main.appendChild(detailField(tr("fieldUser"), tr("fieldUserValue")));
+        main.appendChild(detailField(tr("fieldPc"), tr("fieldPcValue")));
         main.appendChild(zoneBox("above-activity"));
-        main.appendChild(el("div", "psla-fake-text", tr("activity")));
-        var side = el("aside");
+        grid.appendChild(main);
+
+        var side = el("aside", "psla-side");
+        var statusRow = el("div", "psla-side-status");
+        statusRow.appendChild(el("span", "psla-open", tr("sampleStatus")));
+        statusRow.appendChild(zoneBox("beside-status"));
+        side.appendChild(statusRow);
+        var notify = el("div", "psla-side-link");
+        notify.appendChild(miniIcon("bell"));
+        notify.appendChild(el("span", null, tr("notify")));
+        side.appendChild(notify);
+        var share = el("div", "psla-side-link");
+        share.appendChild(miniIcon("share"));
+        share.appendChild(el("span", null, tr("share")));
+        side.appendChild(share);
+        side.appendChild(el("div", "psla-side-label", tr("assigneeLabel")));
+        side.appendChild(personRow("A", "admin"));
+        side.appendChild(el("div", "psla-side-label", tr("reporterLabel")));
+        side.appendChild(personRow(lang() === "ru" ? "И" : "A", tr("reporterName")));
         side.appendChild(zoneBox("sidebar-top"));
-        side.appendChild(el("div", "psla-fake-side", tr("people")));
-        side.appendChild(el("div", "psla-fake-side", tr("fields")));
         side.appendChild(zoneBox("sidebar-bottom"));
         side.appendChild(zoneBox("portal-panel"));
-        grid.appendChild(main);
         grid.appendChild(side);
         request.appendChild(grid);
         frame.appendChild(request);
         frame.appendChild(zoneBox("request-footer"));
+        var powered = el("div", "psla-powered");
+        powered.appendChild(document.createTextNode(tr("powered") + " "));
+        powered.appendChild(el("strong", null, "Jira Service Management"));
+        frame.appendChild(powered);
         canvas.appendChild(frame);
 
         var extra = el("div", "psla-extra");
@@ -789,7 +894,6 @@
         root.appendChild(selectInput(block, "zone", tr("zones")));
         root.appendChild(checkInput(block, "collapsed", tr("collapsed")));
         root.appendChild(checkInput(block, "showName", tr("showName")));
-        root.appendChild(checkInput(block, "showStatus", tr("showStatus")));
         root.appendChild(checkInput(block, "showPauseIcon", tr("pause")));
         root.appendChild(checkInput(block, "showBreachTime", tr("breach")));
         root.appendChild(checkInput(block, "hideWhenEmpty", tr("hideEmpty")));

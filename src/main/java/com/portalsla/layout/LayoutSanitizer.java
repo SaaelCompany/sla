@@ -15,14 +15,15 @@ import java.util.regex.Pattern;
 public final class LayoutSanitizer {
 
     public static final List<String> VARIANTS = Collections.unmodifiableList(Arrays.asList(
-            "compact", "badges", "progress", "countdown", "cards", "timeline", "status-strip"));
+            "compact", "badges", "progress", "countdown", "cards", "timeline", "status-strip",
+            "plain", "portal", "when", "facts"));
 
     public static final List<String> ZONES = Collections.unmodifiableList(Arrays.asList(
             "header", "under-title", "beside-status", "above-description", "above-activity",
             "sidebar-top", "sidebar-bottom", "portal-panel", "request-footer", "my-requests", "custom"));
 
     private static final List<String> TIME_MODES = Arrays.asList("remaining", "elapsed", "goal");
-    private static final List<String> TIME_STYLES = Arrays.asList("largest", "precise");
+    private static final List<String> TIME_STYLES = Arrays.asList("largest", "precise", "spoken");
     private static final List<String> TEXT_SOURCES = Arrays.asList("portal", "jira");
     private static final List<String> METRIC_MODES = Arrays.asList("customer-visible", "all", "selected");
     private static final List<String> POSITIONS = Arrays.asList("before", "after", "prepend", "append");
@@ -107,8 +108,8 @@ public final class LayoutSanitizer {
         block.zone = enumValue(raw.zone, ZONES, "sidebar-top", "bad-zone:" + index, errors);
         block.title = cleanTitle(raw.title);
         block.collapsed = Boolean.valueOf(Boolean.TRUE.equals(raw.collapsed));
-        block.showName = Boolean.valueOf(raw.showName == null ? !"compact".equals(block.variant) : raw.showName.booleanValue());
-        block.showStatus = Boolean.valueOf(raw.showStatus == null ? "status-strip".equals(block.variant) : raw.showStatus.booleanValue());
+        block.showName = Boolean.valueOf(raw.showName == null ? !"compact".equals(block.variant) && !"status-strip".equals(block.variant) : raw.showName.booleanValue());
+        block.showStatus = Boolean.FALSE;
         block.showPauseIcon = Boolean.valueOf(raw.showPauseIcon == null || raw.showPauseIcon.booleanValue());
         block.showBreachTime = Boolean.valueOf(Boolean.TRUE.equals(raw.showBreachTime));
         block.timeMode = enumValue(raw.timeMode, TIME_MODES, "remaining", "bad-time-mode:" + index, errors);

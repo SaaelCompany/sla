@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -30,13 +31,15 @@ public class LayoutSanitizerTest {
         assertTrue(result.layout.enabled.booleanValue());
         assertEquals(1, result.layout.blocks.size());
         PortalSlaLayout.Block block = result.layout.blocks.get(0);
-        assertEquals("compact", block.variant);
+        assertEquals("plain", block.variant);
         assertEquals("sidebar-top", block.zone);
         assertEquals("SLA", block.title);
-        assertFalse(block.showName.booleanValue());
+        assertTrue(block.showName.booleanValue());
+        assertFalse(block.showStatus.booleanValue());
         assertTrue(block.showPauseIcon.booleanValue());
+        assertTrue(block.showBreachTime.booleanValue());
         assertEquals("remaining", block.timeMode);
-        assertEquals("largest", block.timeStyle);
+        assertEquals("spoken", block.timeStyle);
         assertEquals("customer-visible", block.metricMode);
     }
 
@@ -79,5 +82,33 @@ public class LayoutSanitizerTest {
         assertEquals(Integer.valueOf(15), result.layout.blocks.get(0).refreshSeconds);
         assertTrue(result.errors.contains("bad-selector:under-title"));
         assertEquals(Collections.singletonList(".cv-request-header"), result.layout.selectors.get("under-title"));
+    }
+
+    @Test
+    public void acceptsCustomerVariantsAndDropsRequestStatus() {
+        PortalSlaLayout layout = new PortalSlaLayout();
+        layout.enabled = Boolean.TRUE;
+        String[] variants = new String[] {"plain", "portal", "when", "facts"};
+        layout.blocks = new ArrayList<PortalSlaLayout.Block>();
+        for (int i = 0; i < variants.length; i++) {
+            PortalSlaLayout.Block block = new PortalSlaLayout.Block();
+            block.variant = variants[i];
+            block.zone = "sidebar-top";
+            block.timeStyle = "spoken";
+            block.showStatus = Boolean.TRUE;
+            layout.blocks.add(block);
+        }
+
+        LayoutSanitizer.Result result = LayoutSanitizer.sanitize(layout);
+
+        assertTrue(result.ok());
+        assertEquals(4, result.layout.blocks.size());
+        assertEquals("plain", result.layout.blocks.get(0).variant);
+        assertEquals("portal", result.layout.blocks.get(1).variant);
+        assertEquals("when", result.layout.blocks.get(2).variant);
+        assertEquals("facts", result.layout.blocks.get(3).variant);
+        assertEquals("spoken", result.layout.blocks.get(0).timeStyle);
+        assertFalse(result.layout.blocks.get(0).showStatus.booleanValue());
+        assertFalse(result.layout.blocks.get(1).showStatus.booleanValue());
     }
 }

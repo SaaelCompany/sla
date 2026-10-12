@@ -4,7 +4,8 @@
     color: #172B4D;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     font-size: 14px;
-    line-height: 1.45;
+    line-height: 1.42857143;
+    border-top: 3px solid #0052CC;
 }
 
 .psla-app {
@@ -62,12 +63,23 @@
 button,
 .psla-btn {
     border: 1px solid #DFE1E6;
-    background: #FFFFFF;
+    background: #FAFBFC;
     color: #172B4D;
     border-radius: 3px;
-    padding: 6px 12px;
+    min-height: 32px;
+    padding: 0 12px;
     font: inherit;
     cursor: pointer;
+}
+
+button:focus,
+.psla-btn:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #4C9AFF;
+    box-shadow: 0 0 0 2px rgba(76, 154, 255, 0.45);
 }
 
 button:hover,
@@ -112,7 +124,7 @@ button:hover,
 
 .psla-workspace {
     display: grid;
-    grid-template-columns: 250px minmax(0, 1fr) 300px;
+    grid-template-columns: 280px minmax(0, 1fr) 300px;
     gap: 16px;
     padding: 16px 20px 32px;
     align-items: start;
@@ -129,6 +141,14 @@ button:hover,
 .psla-palette,
 .psla-inspector {
     padding: 12px;
+}
+
+.psla-palette,
+.psla-inspector {
+    position: sticky;
+    top: 72px;
+    max-height: calc(100vh - 88px);
+    overflow: auto;
 }
 
 .psla-palette h2,
@@ -195,10 +215,10 @@ button:hover,
 
 .psla-portal-frame {
     border: 1px solid #DFE1E6;
-    border-radius: 8px;
+    border-radius: 3px;
     overflow: hidden;
     background: #FFFFFF;
-    box-shadow: 0 8px 16px rgba(9, 30, 66, 0.08);
+    box-shadow: 0 1px 1px rgba(9, 30, 66, 0.13), 0 0 1px rgba(9, 30, 66, 0.13);
 }
 
 .psla-browser-top {
@@ -243,64 +263,58 @@ button:hover,
 }
 
 .psla-request {
-    margin: 16px;
+    margin: 0;
+    padding: 4px 24px 8px;
     background: #FFFFFF;
 }
 
-.psla-req-key {
-    color: #6B778C;
-    font-size: 12px;
-}
-
-.psla-request h2 {
-    margin: 2px 0 8px;
-    font-size: 22px;
+.psla-req-title {
+    margin: 4px 0 0;
+    color: #172B4D;
+    font-size: 24px;
+    font-weight: 500;
     line-height: 1.25;
-}
-
-.psla-status-line {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
+    letter-spacing: -0.01em;
 }
 
 .psla-request-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 280px;
-    gap: 20px;
-    margin-top: 12px;
-}
-
-.psla-fake-text,
-.psla-fake-side {
-    margin: 8px 0;
-    padding: 10px 12px;
-    border-radius: 3px;
-    background: #F4F5F7;
-    color: #6B778C;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 28px;
+    margin-top: 4px;
 }
 
 .psla-zone {
-    min-height: 36px;
-    margin: 6px 0;
-    padding: 4px;
+    min-height: 4px;
+    margin: 2px 0;
+    padding: 0;
     border: 1px dashed transparent;
     border-radius: 3px;
 }
 
+.psla-zone:hover,
 .psla-zone.is-target,
 .psla-zone.is-over {
+    min-height: 28px;
+    margin: 4px 0;
+    padding: 4px;
     border-color: #4C9AFF;
     background: rgba(222, 235, 255, 0.45);
 }
 
 .psla-zone-label {
+    display: none;
     font-size: 11px;
     letter-spacing: 0.03em;
     text-transform: uppercase;
     color: #97A0AF;
     margin-bottom: 2px;
+}
+
+.psla-zone:hover .psla-zone-label,
+.psla-zone.is-target .psla-zone-label,
+.psla-zone.is-over .psla-zone-label {
+    display: block;
 }
 
 .psla-placed {
@@ -349,12 +363,13 @@ button:hover,
 .psla-advanced textarea,
 .psla-issue-row input {
     box-sizing: border-box;
-    border: 1px solid #DFE1E6;
+    border: 2px solid #DFE1E6;
     border-radius: 3px;
-    padding: 6px 8px;
+    min-height: 32px;
+    padding: 4px 8px;
     font: inherit;
     color: #172B4D;
-    background: #FFFFFF;
+    background: #FAFBFC;
 }
 
 .psla-inspector input[type="text"],
@@ -472,12 +487,202 @@ button:hover,
     color: #6B778C;
 }
 
+.psla-crumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 24px 0;
+}
+
+.psla-bulb {
+    width: 20px;
+    height: 20px;
+    color: #FFAB00;
+    flex: 0 0 20px;
+}
+
+.psla-bulb svg,
+.psla-mini svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
+.psla-bulb svg {
+    width: 20px;
+    height: 20px;
+}
+
+.psla-trail {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.psla-link {
+    color: #0052CC;
+}
+
+.psla-sep {
+    margin: 0 6px;
+    color: #6B778C;
+}
+
+.psla-comment {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0 20px;
+}
+
+.psla-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    border-radius: 50%;
+    background: #DFE1E6;
+    color: #42526E;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.psla-avatar.is-small {
+    width: 24px;
+    height: 24px;
+    flex-basis: 24px;
+    font-size: 11px;
+}
+
+.psla-comment-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex: 1;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 2px solid #DFE1E6;
+    border-radius: 3px;
+    color: #97A0AF;
+    background: #FFFFFF;
+}
+
+.psla-mini {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    color: #6B778C;
+}
+
+.psla-details-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin: 0 0 12px;
+}
+
+.psla-details-head strong {
+    font-size: 14px;
+}
+
+.psla-details-head span,
+.psla-field-label,
+.psla-side-label {
+    color: #6B778C;
+    font-size: 12px;
+}
+
+.psla-field-label {
+    margin-top: 12px;
+}
+
+.psla-field-value {
+    margin-top: 2px;
+    color: #172B4D;
+}
+
+.psla-side-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.psla-open {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 3px;
+    background: #172B4D;
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.psla-side-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+    color: #0052CC;
+    font-size: 14px;
+}
+
+.psla-side-link .psla-mini {
+    color: #0052CC;
+}
+
+.psla-side-label {
+    margin: 14px 0 4px;
+}
+
+.psla-person {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 24px;
+    color: #172B4D;
+}
+
+.psla-powered {
+    padding: 20px 16px 16px;
+    border-top: 1px solid #F4F5F7;
+    color: #6B778C;
+    font-size: 12px;
+    text-align: center;
+}
+
+.psla-powered strong {
+    color: #42526E;
+    font-weight: 600;
+}
+
+.psla-group-label {
+    margin: 12px 0 6px;
+}
+
+.psla-palette h2:first-child,
+.psla-group-label:first-of-type {
+    margin-top: 0;
+}
+
 @media (max-width: 1100px) {
     .psla-workspace,
     .psla-request-grid,
     .psla-extra,
     .psla-top {
         display: block;
+    }
+
+    .psla-palette,
+    .psla-inspector {
+        position: static;
+        max-height: none;
     }
 
     .psla-palette,

@@ -4,38 +4,72 @@
 
     var COPY = {
         ru: {
-            paused: "Пауза",
+            paused: "На паузе",
             running: "В срок",
-            at_risk: "Скоро нарушит",
-            breached: "Нарушено",
-            met: "Выполнено",
-            missed: "Нарушено",
+            at_risk: "Срок близко",
+            breached: "Срок прошёл",
+            met: "Успели",
+            missed: "Не успели",
             inactive: "Нет данных",
-            empty: "Нет данных по SLA",
+            empty: "Нет данных по сроку",
             remaining: "Осталось",
             elapsed: "Прошло",
             goal: "Цель",
             breach: "Срок",
+            overdueLabel: "Опоздание",
             outside: "Вне графика",
-            ongoing: "Сейчас",
-            cycle: "Цикл"
+            cycle: "Шаг",
+            leftHead: "Осталось ",
+            leftTail: "",
+            riskHead: "Осталось мало: ",
+            pauseHead: "На паузе. Осталось ",
+            pauseMid: ", время не идёт",
+            overHead: "Срок уже прошёл ",
+            overTail: " назад.",
+            dueJoin: ". Срок — ",
+            endMark: ".",
+            sentenceMet: "Успели вовремя.",
+            sentenceMissed: "Не уложились в срок.",
+            sentenceNone: "Пока нет данных по этому сроку.",
+            subLeft: "осталось ",
+            subPause: "на паузе · осталось ",
+            subOver: "опоздание ",
+            subWas: " · было ",
+            subJoin: " · "
         },
         en: {
             paused: "Paused",
-            running: "On track",
-            at_risk: "At risk",
-            breached: "Breached",
-            met: "Met",
-            missed: "Breached",
+            running: "On time",
+            at_risk: "Due soon",
+            breached: "Overdue",
+            met: "Finished",
+            missed: "Missed",
             inactive: "No data",
             empty: "No SLA data",
             remaining: "Remaining",
             elapsed: "Elapsed",
             goal: "Goal",
             breach: "Due",
+            overdueLabel: "Overdue",
             outside: "Outside hours",
-            ongoing: "Ongoing",
-            cycle: "Cycle"
+            cycle: "Step",
+            leftHead: "",
+            leftTail: " left",
+            riskHead: "Only ",
+            pauseHead: "Paused. ",
+            pauseMid: " left, the clock is stopped",
+            overHead: "Overdue by ",
+            overTail: ".",
+            dueJoin: ". Due ",
+            endMark: ".",
+            sentenceMet: "Finished on time.",
+            sentenceMissed: "Missed the due time.",
+            sentenceNone: "There is no due time yet.",
+            subLeft: "",
+            subPause: "paused · ",
+            subOver: "overdue ",
+            subWas: " · was ",
+            subJoin: " · "
         }
     };
 
@@ -141,9 +175,19 @@
     ];
 
     function t(locale, key) {
-        var lang = locale && String(locale).toLowerCase().indexOf("ru") === 0 ? "ru" : "en";
+        var lang = isRussian(locale) ? "ru" : "en";
         var table = COPY[lang];
-        return table[key] || COPY.en[key] || key;
+        if (Object.prototype.hasOwnProperty.call(table, key)) {
+            return table[key];
+        }
+        if (Object.prototype.hasOwnProperty.call(COPY.en, key)) {
+            return COPY.en[key];
+        }
+        return key;
+    }
+
+    function isRussian(locale) {
+        return locale && String(locale).toLowerCase().indexOf("ru") === 0;
     }
 
     function el(tag, className, text) {
@@ -153,6 +197,21 @@
         }
         if (text != null) {
             node.textContent = text;
+        }
+        return node;
+    }
+
+    function appendBits(node, bits) {
+        var i;
+        for (i = 0; i < bits.length; i++) {
+            if (bits[i] == null || bits[i] === "") {
+                continue;
+            }
+            if (typeof bits[i] === "string") {
+                node.appendChild(document.createTextNode(bits[i]));
+            } else {
+                node.appendChild(bits[i]);
+            }
         }
         return node;
     }
@@ -172,10 +231,32 @@
         return span;
     }
 
+    function dot(state) {
+        var node = el("span", "psla-dot psla-state-" + state);
+        node.setAttribute("aria-hidden", "true");
+        return node;
+    }
+
+    function pluralRu(value, one, few, many) {
+        var n10 = value % 10;
+        var n100 = value % 100;
+        if (n10 === 1 && n100 !== 11) {
+            return one;
+        }
+        if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) {
+            return few;
+        }
+        return many;
+    }
+
+    function pluralEn(value, one, many) {
+        return value === 1 ? one : many;
+    }
+
     function formatDuration(millis, style, hoursPerDay, daysPerWeek, locale) {
         var dayHours = hoursPerDay < 1 || hoursPerDay > 24 ? 8 : hoursPerDay;
         var weekDays = daysPerWeek < 1 || daysPerWeek > 7 ? 5 : daysPerWeek;
-        var russian = locale && String(locale).toLowerCase().indexOf("ru") === 0;
+        var russian = isRussian(locale);
         var negative = millis < 0;
         var abs = negative ? -millis : millis;
         var minute = 60 * 1000;
@@ -189,9 +270,11 @@
         var days = Math.floor((abs % week) / day);
         var hours = Math.floor((abs % day) / hour);
         var minutes = Math.floor((abs % hour) / minute);
-        var text = style === "precise"
-            ? precise(weeks, days, hours, minutes, russian)
-            : largest(weeks, days, hours, minutes, russian);
+        var text = style === "spoken"
+            ? spoken(weeks, days, hours, minutes, russian)
+            : style === "precise"
+                ? precise(weeks, days, hours, minutes, russian)
+                : largest(weeks, days, hours, minutes, russian);
         if (negative && text.charAt(0) !== "0") {
             return (russian ? "\u2212" : "-") + text;
         }
@@ -233,6 +316,38 @@
         }
         if (!parts.length) {
             return russian ? "0 мин." : "0m";
+        }
+        return parts.join(" ");
+    }
+
+    function spoken(weeks, days, hours, minutes, russian) {
+        var values = [weeks, days, hours, minutes];
+        var ru = [
+            ["неделя", "недели", "недель"],
+            ["день", "дня", "дней"],
+            ["час", "часа", "часов"],
+            ["минута", "минуты", "минут"]
+        ];
+        var en = [
+            ["week", "weeks"],
+            ["day", "days"],
+            ["hour", "hours"],
+            ["minute", "minutes"]
+        ];
+        var parts = [];
+        var i;
+        for (i = 0; i < values.length; i++) {
+            if (values[i] > 0) {
+                parts.push(russian
+                    ? values[i] + " " + pluralRu(values[i], ru[i][0], ru[i][1], ru[i][2])
+                    : values[i] + " " + pluralEn(values[i], en[i][0], en[i][1]));
+            }
+            if (parts.length === 2) {
+                break;
+            }
+        }
+        if (!parts.length) {
+            return russian ? "0 минут" : "0 minutes";
         }
         return parts.join(" ");
     }
@@ -296,14 +411,14 @@
 
     function displayText(metric, block, model) {
         var mode = block.timeMode || "remaining";
-        var preciseStyle = block.timeStyle === "precise";
+        var wordy = block.timeStyle === "precise" || block.timeStyle === "spoken";
         if (block.textSource === "jira" && metric.jira) {
             var bag = metric.jira;
             var value = mode === "elapsed"
-                ? (preciseStyle ? bag.elapsedLong : bag.elapsedShort)
+                ? (wordy ? bag.elapsedLong : bag.elapsedShort)
                 : mode === "goal"
-                    ? (preciseStyle ? bag.goalLong : bag.goalShort)
-                    : (preciseStyle ? bag.remainingLong : bag.remainingShort);
+                    ? (wordy ? bag.goalLong : bag.goalShort)
+                    : (wordy ? bag.remainingLong : bag.remainingShort);
             if (value) {
                 return value;
             }
@@ -311,15 +426,58 @@
         return formatDuration(primaryMs(metric, mode), block.timeStyle, model.hoursPerDay, model.daysPerWeek, model.locale);
     }
 
+    function clock(date) {
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        return (hours < 10 ? "0" : "") + hours + ":" + (minutes < 10 ? "0" : "") + minutes;
+    }
+
+    function friendlyWhen(ms, locale) {
+        if (!ms) {
+            return "";
+        }
+        var date = new Date(ms);
+        if (isNaN(date.getTime())) {
+            return "";
+        }
+        var time = clock(date);
+        var sameYear = date.getFullYear() === new Date().getFullYear();
+        if (isRussian(locale)) {
+            var months = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+            var day = date.getDate() + " " + months[date.getMonth()];
+            if (!sameYear) {
+                day += " " + date.getFullYear();
+            }
+            return day + ", " + time;
+        }
+        var enMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        var text = enMonths[date.getMonth()] + " " + date.getDate();
+        if (!sameYear) {
+            text += ", " + date.getFullYear();
+        }
+        return text + ", " + time;
+    }
+
     function when(ms, locale) {
         if (!ms) {
             return "";
+        }
+        var friendly = friendlyWhen(ms, locale);
+        if (friendly) {
+            return friendly;
         }
         try {
             return new Date(ms).toLocaleString(locale || undefined);
         } catch (ignore) {
             return "";
         }
+    }
+
+    function dueText(block, metric, model) {
+        if (!block.showBreachTime || !metric.breachTimeMs) {
+            return "";
+        }
+        return friendlyWhen(metric.breachTimeMs, model.locale);
     }
 
     function timeNode(metric, block, model, described) {
@@ -330,6 +488,66 @@
             node.setAttribute("data-psla-source", "jira");
         }
         return node;
+    }
+
+    function absTimeNode(metric, block, model, described) {
+        var node = timeNode(metric, block, model, described);
+        var text = node.textContent || "";
+        if (text.charAt(0) === "\u2212" || text.charAt(0) === "-") {
+            node.textContent = text.substring(1);
+        }
+        node.setAttribute("data-psla-abs", "1");
+        return node;
+    }
+
+    function finished(state) {
+        return state === "met" || state === "missed" || state === "inactive";
+    }
+
+    function asRemaining(block) {
+        if (!block || !block.timeMode || block.timeMode === "remaining") {
+            return block;
+        }
+        return {
+            timeMode: "remaining",
+            timeStyle: block.timeStyle,
+            textSource: block.textSource,
+            showBreachTime: block.showBreachTime,
+            showPauseIcon: block.showPauseIcon,
+            showName: block.showName
+        };
+    }
+
+    function withDue(locale, due) {
+        if (!due) {
+            return t(locale, "endMark");
+        }
+        return t(locale, "dueJoin") + due + t(locale, "endMark");
+    }
+
+    function sentenceBits(metric, block, model, described) {
+        var locale = model.locale;
+        var due = dueText(block, metric, model);
+        var state = described.state;
+        if (state === "met") {
+            return [t(locale, "sentenceMet")];
+        }
+        if (state === "missed") {
+            return [t(locale, "sentenceMissed")];
+        }
+        if (state === "inactive") {
+            return [t(locale, "sentenceNone")];
+        }
+        if (state === "breached") {
+            return [t(locale, "overHead"), absTimeNode(metric, block, model, described), t(locale, "overTail")];
+        }
+        if (state === "paused") {
+            return [t(locale, "pauseHead"), timeNode(metric, block, model, described), t(locale, "pauseMid"), withDue(locale, due)];
+        }
+        if (state === "at_risk") {
+            return [t(locale, "riskHead"), timeNode(metric, block, model, described), t(locale, "leftTail"), withDue(locale, due)];
+        }
+        return [t(locale, "leftHead"), timeNode(metric, block, model, described), t(locale, "leftTail"), withDue(locale, due)];
     }
 
     function marker(block, described) {
@@ -343,14 +561,6 @@
             return icon("check");
         }
         return null;
-    }
-
-    function statusLozenge(model) {
-        if (!model.status || !model.status.name) {
-            return null;
-        }
-        var category = model.status.category || "undefined";
-        return el("span", "psla-lozenge psla-cat-" + category, model.status.name);
     }
 
     function header(block, open) {
@@ -429,12 +639,6 @@
 
     function renderBadges(body, block, model, metrics) {
         var wrap = el("div", "psla-badges");
-        if (block.showStatus) {
-            var status = statusLozenge(model);
-            if (status) {
-                wrap.appendChild(status);
-            }
-        }
         var i;
         for (i = 0; i < metrics.length; i++) {
             var described = describe(metrics[i], block.riskPercent);
@@ -481,6 +685,9 @@
             fill.setAttribute("data-psla-bar", String(metric.id));
             track.appendChild(fill);
             box.appendChild(track);
+            if (block.showBreachTime && metric.breachTimeMs && !finished(described.state)) {
+                box.appendChild(el("p", "psla-sub", t(model.locale, "breach") + ": " + when(metric.breachTimeMs, model.locale)));
+            }
             body.appendChild(box);
         }
     }
@@ -508,11 +715,14 @@
         for (i = 0; i < metrics.length; i++) {
             var metric = metrics[i];
             var described = describe(metric, block.riskPercent);
-            var card = el("article", "psla-card");
+            var card = el("article", "psla-card psla-state-" + described.state);
             card.appendChild(el("h3", null, metric.name));
+            card.appendChild(el("p", "psla-card-state", t(model.locale, described.state)));
             var list = el("dl");
-            addPair(list, t(model.locale, "status"), t(model.locale, described.state));
-            addPair(list, t(model.locale, "remaining"), formatDuration(metric.remainingMs || 0, "precise", model.hoursPerDay, model.daysPerWeek, model.locale));
+            if (!finished(described.state)) {
+                var remainingText = formatDuration(metric.remainingMs || 0, block.timeStyle === "spoken" ? "spoken" : "precise", model.hoursPerDay, model.daysPerWeek, model.locale);
+                addPair(list, t(model.locale, described.state === "breached" ? "overdueLabel" : "remaining"), described.state === "breached" ? unsigned(remainingText) : remainingText);
+            }
             addPair(list, t(model.locale, "elapsed"), formatDuration(metric.elapsedMs || 0, "precise", model.hoursPerDay, model.daysPerWeek, model.locale));
             addPair(list, t(model.locale, "goal"), formatDuration(metric.goalMs || 0, "precise", model.hoursPerDay, model.daysPerWeek, model.locale));
             if (block.showBreachTime && metric.breachTimeMs) {
@@ -522,6 +732,13 @@
             grid.appendChild(card);
         }
         body.appendChild(grid);
+    }
+
+    function unsigned(text) {
+        if (text && (text.charAt(0) === "\u2212" || text.charAt(0) === "-")) {
+            return text.substring(1);
+        }
+        return text;
     }
 
     function addPair(list, label, value) {
@@ -545,11 +762,14 @@
                 var list = el("ol");
                 for (c = 0; c < items.length; c++) {
                     var cycle = items[c];
-                    var state = cycle.ongoing ? (cycle.breached ? "breached" : "running") : (cycle.breached ? "missed" : "met");
+                    var state = cycle.ongoing ? describe(metric, block.riskPercent).state : (cycle.breached ? "missed" : "met");
                     var li = el("li", "is-" + (cycle.breached ? "breached" : "met"));
-                    var title = cycle.ongoing ? t(model.locale, "ongoing") : t(model.locale, "cycle") + " " + (c + 1);
-                    li.appendChild(el("strong", null, title + " · " + t(model.locale, state)));
-                    var detail = formatDuration(cycle.elapsedMs || 0, "precise", model.hoursPerDay, model.daysPerWeek, model.locale);
+                    var title = t(model.locale, state);
+                    if (!cycle.ongoing && items.length > 1) {
+                        title = (c + 1) + ". " + title;
+                    }
+                    li.appendChild(el("strong", null, title));
+                    var detail = formatDuration(cycle.elapsedMs || 0, block.timeStyle === "spoken" ? "spoken" : "precise", model.hoursPerDay, model.daysPerWeek, model.locale);
                     var range = when(cycle.startTimeMs, model.locale);
                     if (cycle.stopTimeMs) {
                         range += " — " + when(cycle.stopTimeMs, model.locale);
@@ -565,23 +785,18 @@
 
     function renderStrip(body, block, model, metrics) {
         var row = el("div", "psla-status-row");
-        if (block.showStatus) {
-            var status = statusLozenge(model);
-            if (status) {
-                row.appendChild(status);
-            }
-        }
         if (block.title && block.title !== "SLA") {
             row.appendChild(el("strong", null, block.title));
         }
         var i;
         for (i = 0; i < metrics.length; i++) {
             var described = describe(metrics[i], block.riskPercent);
-            var bit = el("span", "psla-row-main");
+            var bit = el("span", "psla-row-main psla-state-" + described.state);
             if (block.showName) {
                 bit.appendChild(el("span", "psla-name", metrics[i].name));
             }
             bit.appendChild(timeNode(metrics[i], block, model, described));
+            bit.appendChild(el("span", "psla-soft", t(model.locale, described.state)));
             var mark = marker(block, described);
             if (mark) {
                 bit.appendChild(mark);
@@ -591,6 +806,163 @@
         body.appendChild(row);
     }
 
+    function renderPlain(body, block, model, metrics) {
+        var i;
+        for (i = 0; i < metrics.length; i++) {
+            var described = describe(metrics[i], block.riskPercent);
+            var box = el("div", "psla-plain psla-state-" + described.state);
+            if (block.showName) {
+                box.appendChild(el("div", "psla-name", metrics[i].name));
+            }
+            box.appendChild(appendBits(el("p", "psla-sentence"), sentenceBits(metrics[i], asRemaining(block), model, described)));
+            body.appendChild(box);
+        }
+    }
+
+    function renderPortal(body, block, model, metrics) {
+        var i;
+        for (i = 0; i < metrics.length; i++) {
+            var metric = metrics[i];
+            var described = describe(metric, block.riskPercent);
+            var item = el("div", "psla-portal-item psla-state-" + described.state);
+            if (block.showName) {
+                item.appendChild(el("div", "psla-portal-name", metric.name));
+            }
+            var line = el("div", "psla-portal-line");
+            var mark = marker(block, described);
+            if (mark) {
+                line.appendChild(mark);
+            } else {
+                line.appendChild(dot(described.state));
+            }
+            line.appendChild(el("span", "psla-portal-state", t(model.locale, described.state)));
+            item.appendChild(line);
+            var meta = portalMeta(metric, asRemaining(block), model, described);
+            if (meta) {
+                item.appendChild(meta);
+            }
+            body.appendChild(item);
+        }
+    }
+
+    function portalMeta(metric, block, model, described) {
+        if (described.state === "met" || described.state === "inactive") {
+            return null;
+        }
+        var meta = el("div", "psla-portal-meta");
+        var due = dueText(block, metric, model);
+        if ((described.state === "breached" || described.state === "missed") && metric.remainingMs < 0) {
+            appendBits(meta, [t(model.locale, "subOver"), absTimeNode(metric, block, model, described)]);
+            if (due && described.state === "breached") {
+                meta.appendChild(document.createTextNode(t(model.locale, "subWas") + due));
+            }
+            return meta;
+        }
+        if (described.state === "missed") {
+            return null;
+        }
+        meta.appendChild(timeNode(metric, block, model, described));
+        if (due) {
+            meta.appendChild(document.createTextNode(" \u2014 " + due));
+        }
+        return meta;
+    }
+
+    function renderWhen(body, block, model, metrics) {
+        var i;
+        for (i = 0; i < metrics.length; i++) {
+            var metric = metrics[i];
+            var described = describe(metric, block.riskPercent);
+            var box = el("div", "psla-when psla-state-" + described.state);
+            if (block.showName) {
+                box.appendChild(el("div", "psla-name", metric.name));
+            }
+            var clockBlock = asRemaining(block);
+            var due = dueText(block, metric, model);
+            var hero = el("div", "psla-when-date");
+            if (described.state === "met") {
+                hero.textContent = t(model.locale, "sentenceMet");
+            } else if (described.state === "missed") {
+                hero.textContent = t(model.locale, "sentenceMissed");
+            } else if (described.state === "inactive") {
+                hero.textContent = t(model.locale, "sentenceNone");
+            } else if (due) {
+                hero.textContent = due;
+            } else if (described.state === "breached") {
+                hero.appendChild(absTimeNode(metric, clockBlock, model, described));
+            } else {
+                hero.appendChild(timeNode(metric, clockBlock, model, described));
+            }
+            box.appendChild(hero);
+            var sub = whenSub(metric, clockBlock, model, described, due);
+            if (sub) {
+                box.appendChild(sub);
+            }
+            body.appendChild(box);
+        }
+    }
+
+    function whenSub(metric, block, model, described, due) {
+        if (finished(described.state)) {
+            return null;
+        }
+        var sub = el("p", "psla-sub");
+        var locale = model.locale;
+        if (described.state === "breached") {
+            if (!due) {
+                return null;
+            }
+            appendBits(sub, [t(locale, "subOver"), absTimeNode(metric, block, model, described)]);
+            return sub;
+        }
+        if (!due) {
+            sub.textContent = t(locale, described.state);
+            return sub;
+        }
+        if (described.state === "paused") {
+            appendBits(sub, [t(locale, "subPause"), timeNode(metric, block, model, described), t(locale, "leftTail")]);
+            return sub;
+        }
+        appendBits(sub, [
+            t(locale, "subLeft"),
+            timeNode(metric, block, model, described),
+            t(locale, "leftTail"),
+            t(locale, "subJoin"),
+            t(locale, described.state).toLowerCase()
+        ]);
+        return sub;
+    }
+
+    function renderFacts(body, block, model, metrics) {
+        var i;
+        for (i = 0; i < metrics.length; i++) {
+            var metric = metrics[i];
+            var described = describe(metric, block.riskPercent);
+            var box = el("div", "psla-facts psla-state-" + described.state);
+            if (block.showName) {
+                box.appendChild(el("div", "psla-name", metric.name));
+            }
+            box.appendChild(el("div", "psla-facts-state", t(model.locale, described.state)));
+            if (!finished(described.state)) {
+                var clockBlock = asRemaining(block);
+                var row = el("div", "psla-fact");
+                row.appendChild(el("span", "psla-fact-label", t(model.locale, described.state === "breached" ? "overdueLabel" : "remaining")));
+                row.appendChild(described.state === "breached"
+                    ? absTimeNode(metric, clockBlock, model, described)
+                    : timeNode(metric, clockBlock, model, described));
+                box.appendChild(row);
+                var due = dueText(block, metric, model);
+                if (due) {
+                    var dueRow = el("div", "psla-fact");
+                    dueRow.appendChild(el("span", "psla-fact-label", t(model.locale, "breach")));
+                    dueRow.appendChild(el("span", null, due));
+                    box.appendChild(dueRow);
+                }
+            }
+            body.appendChild(box);
+        }
+    }
+
     var RENDERERS = {
         compact: renderCompact,
         badges: renderBadges,
@@ -598,7 +970,11 @@
         countdown: renderCountdown,
         cards: renderCards,
         timeline: renderTimeline,
-        "status-strip": renderStrip
+        "status-strip": renderStrip,
+        plain: renderPlain,
+        portal: renderPortal,
+        when: renderWhen,
+        facts: renderFacts
     };
 
     function render(container, block, model, options) {
@@ -624,12 +1000,6 @@
             var head = header(block, open);
             root.appendChild(head);
             wireCollapse(root, head, block);
-        }
-        if (block.showStatus && block.variant !== "badges" && block.variant !== "status-strip") {
-            var status = statusLozenge(safeModel);
-            if (status) {
-                root.appendChild(status);
-            }
         }
         var body = el("div", "psla-body");
         if (!metrics.length) {

@@ -223,7 +223,11 @@
             }
             var mode = times[i].getAttribute("data-psla-mode") || "remaining";
             var ms = mode === "elapsed" ? metric.elapsedMs : mode === "goal" ? metric.goalMs : metric.remainingMs;
-            times[i].textContent = api.formatDuration(ms, block.timeStyle, lastModel.hoursPerDay, lastModel.daysPerWeek, lastModel.locale);
+            var text = api.formatDuration(ms, block.timeStyle, lastModel.hoursPerDay, lastModel.daysPerWeek, lastModel.locale);
+            if (times[i].getAttribute("data-psla-abs") === "1" && (text.charAt(0) === "\u2212" || text.charAt(0) === "-")) {
+                text = text.substring(1);
+            }
+            times[i].textContent = text;
         }
         var bars = document.querySelectorAll(".psla-fill[data-psla-bar]");
         for (i = 0; i < bars.length; i++) {

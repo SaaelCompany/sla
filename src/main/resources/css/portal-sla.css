@@ -20,7 +20,11 @@
     color: #172B4D;
 }
 
-.psla-variant-compact {
+.psla-variant-compact,
+.psla-variant-plain,
+.psla-variant-portal,
+.psla-variant-when,
+.psla-variant-facts {
     max-width: 280px;
 }
 
@@ -30,8 +34,9 @@
     justify-content: space-between;
     width: 100%;
     margin: 0;
-    padding: 2px 0 6px;
+    padding: 2px 2px 6px 0;
     border: 0;
+    border-radius: 3px;
     background: transparent;
     color: #172B4D;
     font: inherit;
@@ -43,7 +48,7 @@
 }
 
 .psla-head:hover {
-    color: #0052CC;
+    background: #F4F5F7;
 }
 
 .psla-icon {
@@ -362,4 +367,192 @@
 .psla-dense .psla-row {
     min-height: 18px;
     font-size: 12px;
+}
+
+.psla-soft {
+    color: #6B778C;
+    font-size: 12px;
+}
+
+.psla-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #36B37E;
+    flex: 0 0 8px;
+    display: inline-block;
+}
+
+.psla-dot.psla-state-at_risk {
+    background: #FFAB00;
+}
+
+.psla-dot.psla-state-breached,
+.psla-dot.psla-state-missed {
+    background: #FF5630;
+}
+
+.psla-dot.psla-state-paused,
+.psla-dot.psla-state-inactive {
+    background: #6B778C;
+}
+
+.psla-portal-item,
+.psla-plain,
+.psla-when {
+    padding: 2px 0 10px;
+}
+
+.psla-portal-name,
+.psla-plain .psla-name,
+.psla-when .psla-name,
+.psla-facts .psla-name {
+    display: block;
+    margin: 0 0 2px;
+    color: #172B4D;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.psla-portal-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 20px;
+    color: #172B4D;
+}
+
+.psla-portal-state {
+    font-size: 14px;
+}
+
+.psla-portal-meta {
+    margin: 2px 0 0 24px;
+    color: #6B778C;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.psla-portal-meta .psla-time {
+    color: inherit;
+    font-size: inherit;
+}
+
+.psla-sentence {
+    margin: 0;
+    color: #172B4D;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.psla-when-date {
+    color: #172B4D;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+}
+
+.psla-when.psla-state-at_risk .psla-when-date {
+    color: #FF8B00;
+}
+
+.psla-when.psla-state-breached .psla-when-date,
+.psla-when.psla-state-missed .psla-when-date {
+    color: #DE350B;
+}
+
+.psla-facts {
+    margin: 8px 0;
+    padding: 2px 0 8px 10px;
+    border-left: 3px solid #36B37E;
+}
+
+.psla-facts.psla-state-at_risk {
+    border-left-color: #FFAB00;
+}
+
+.psla-facts.psla-state-breached,
+.psla-facts.psla-state-missed {
+    border-left-color: #FF5630;
+}
+
+.psla-facts.psla-state-paused,
+.psla-facts.psla-state-inactive {
+    border-left-color: #6B778C;
+}
+
+.psla-facts-state,
+.psla-card-state {
+    margin: 0 0 4px;
+    color: #006644;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.psla-facts.psla-state-at_risk .psla-facts-state,
+.psla-card.psla-state-at_risk .psla-card-state {
+    color: #FF8B00;
+}
+
+.psla-facts.psla-state-breached .psla-facts-state,
+.psla-facts.psla-state-missed .psla-facts-state,
+.psla-card.psla-state-breached .psla-card-state,
+.psla-card.psla-state-missed .psla-card-state {
+    color: #DE350B;
+}
+
+.psla-facts.psla-state-paused .psla-facts-state,
+.psla-facts.psla-state-inactive .psla-facts-state,
+.psla-card.psla-state-paused .psla-card-state,
+.psla-card.psla-state-inactive .psla-card-state {
+    color: #6B778C;
+}
+
+.psla-fact {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 2px 0;
+    font-size: 13px;
+}
+
+.psla-fact-label {
+    color: #6B778C;
+}
+
+.psla-card.psla-state-running,
+.psla-card.psla-state-met {
+    border-left: 3px solid #36B37E;
+}
+
+.psla-card.psla-state-at_risk {
+    border-left: 3px solid #FFAB00;
+}
+
+.psla-card.psla-state-breached,
+.psla-card.psla-state-missed {
+    border-left: 3px solid #FF5630;
+}
+
+.psla-card.psla-state-paused,
+.psla-card.psla-state-inactive {
+    border-left: 3px solid #6B778C;
+}
+
+.psla-dense .psla-sentence,
+.psla-dense .psla-portal-meta,
+.psla-dense .psla-when-date {
+    font-size: 12px;
+}
+
+.psla-dense .psla-plain,
+.psla-dense .psla-portal-item,
+.psla-dense .psla-when,
+.psla-dense .psla-facts {
+    padding-top: 0;
+    padding-bottom: 4px;
+    margin-top: 0;
+    margin-bottom: 0;
 }

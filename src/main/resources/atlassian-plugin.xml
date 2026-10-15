@@ -2,7 +2,7 @@
 <atlassian-plugin key="com.portalsla.portal-sla" name="Niout Portal SLA for JSM" plugins-version="2">
     <plugin-info>
         <description>SLA на портале клиента Jira Service Management: блок всегда внизу боковой панели, вид и метрики настраиваются в проекте.</description>
-        <version>1.0.15</version>
+        <version>1.0.16</version>
         <vendor name="Niout"/>
         <param name="atlassian-data-center-status">compatible</param>
         <param name="atlassian-data-center-compatible">true</param>

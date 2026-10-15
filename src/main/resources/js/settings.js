@@ -76,7 +76,7 @@
                 paused: "На паузе",
                 running: "В срок",
                 risk: "Истекает",
-                breached: "Просрочено",
+                breached: "Срок прошел",
                 done: "Выполнено"
             },
             errors: {

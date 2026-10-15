@@ -7,9 +7,9 @@
             paused: "На паузе",
             running: "В срок",
             at_risk: "Истекает",
-            breached: "Срок прошёл",
+            breached: "Срок прошел",
             met: "В срок",
-            missed: "Просрочено",
+            missed: "Срок прошел",
             inactive: "Нет данных",
             empty: "Нет данных по сроку",
             remaining: "Осталось",
@@ -32,7 +32,7 @@
             dueJoin: ". Срок — ",
             endMark: ".",
             sentenceMet: "В срок.",
-            sentenceMissed: "Просрочено.",
+            sentenceMissed: "Срок прошел.",
             sentenceNone: "Пока нет данных по этому сроку.",
             subLeft: "осталось ",
             subPause: "на паузе · осталось ",
@@ -750,7 +750,7 @@
             return (value < 10 ? "0" : "") + value;
         }
         return pad(date.getDate()) + "." + pad(date.getMonth() + 1) + "." + date.getFullYear()
-            + ", " + pad(date.getHours()) + ":" + pad(date.getMinutes()) + ":" + pad(date.getSeconds());
+            + ", " + pad(date.getHours()) + ":" + pad(date.getMinutes());
     }
 
     function renderTimeline(body, block, model, metrics) {
@@ -1027,24 +1027,31 @@
         return face;
     }
 
-    function captionMeta(metric, block, model, described) {
-        if (described.state === "met" || described.state === "inactive" || described.state === "missed") {
-            return null;
+    function appendSymbolFacts(copy, metric, block, model, described) {
+        var locale = model.locale;
+        var clockBlock = asRemaining(block);
+        var main = el("div", "psla-symbol-main");
+        if (described.state === "paused") {
+            appendBits(main, [timeNode(metric, clockBlock, model, described), t(locale, "pauseMid")]);
+        } else if (described.state === "breached") {
+            appendBits(main, [t(locale, "overHead"), absTimeNode(metric, clockBlock, model, described), t(locale, "overTail")]);
+        } else if (described.state === "missed") {
+            main.textContent = t(locale, "sentencePassed");
+        } else if (described.state === "inactive") {
+            main.textContent = t(locale, "empty");
+        } else if (described.state === "met") {
+            main.textContent = t(locale, "elapsed") + " " + formatDuration(metric.elapsedMs || 0, "precise", model.hoursPerDay, model.daysPerWeek, model.locale);
+        } else {
+            appendBits(main, [t(locale, "leftHead"), timeNode(metric, clockBlock, model, described), t(locale, "leftTail")]);
         }
-        var meta = el("div", "psla-clock-meta");
+        copy.appendChild(main);
         var due = dueText(block, metric, model);
-        if ((described.state === "breached") && metric.remainingMs < 0) {
-            appendBits(meta, [t(model.locale, "subOver"), absTimeNode(metric, block, model, described)]);
-            if (due) {
-                meta.appendChild(document.createTextNode(t(model.locale, "subWas") + due));
-            }
-            return meta;
+        if (due && described.state !== "inactive") {
+            copy.appendChild(el("div", "psla-symbol-sub", t(locale, "breach") + " — " + due));
         }
-        meta.appendChild(timeNode(metric, block, model, described));
-        if (due) {
-            meta.appendChild(document.createTextNode(" \u2014 " + due));
+        if (described.state !== "met" && described.state !== "inactive" && (metric.elapsedMs || 0) > 0) {
+            copy.appendChild(el("div", "psla-symbol-sub", t(locale, "elapsed") + " " + formatDuration(metric.elapsedMs || 0, "precise", model.hoursPerDay, model.daysPerWeek, model.locale)));
         }
-        return meta;
     }
 
     function renderClock(body, block, model, metrics) {
@@ -1059,10 +1066,7 @@
             if (block.showName) {
                 copy.appendChild(el("div", "psla-portal-name", metric.name));
             }
-            var meta = captionMeta(metric, clockBlock, model, described);
-            if (meta) {
-                copy.appendChild(meta);
-            }
+            appendSymbolFacts(copy, metric, clockBlock, model, described);
             item.appendChild(copy);
             body.appendChild(item);
         }
@@ -1105,11 +1109,7 @@
             if (block.showName) {
                 copy.appendChild(el("div", "psla-portal-name", metric.name));
             }
-            var meta = captionMeta(metric, asRemaining(block), model, described);
-            if (meta) {
-                meta.className = "psla-traffic-meta";
-                copy.appendChild(meta);
-            }
+            appendSymbolFacts(copy, metric, asRemaining(block), model, described);
             item.appendChild(copy);
             body.appendChild(item);
         }
